@@ -56,6 +56,7 @@ const AdminTeacherPage = () => {
                         await response.json();
                     const fetch_teachers = data.data.map((teacher) => ({
                         key: teacher.id,
+                        id: teacher.id,
                         username: teacher.username,
                         email: teacher.email,
                         user_fullname: teacher.user_fullname,
@@ -309,6 +310,7 @@ const AdminTeacherPage = () => {
                     ...prev,
                     {
                         key: data.data.username,
+                        id: data.data.id,
                         username: data.data.username,
                         email: email,
                         user_fullname: user_fullname,

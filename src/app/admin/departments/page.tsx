@@ -7,13 +7,7 @@ import { message, Table, Button, Input, Space, Form } from "antd";
 import type { InputRef, TableColumnType, FormProps } from "antd";
 import { getCookie } from "cookies-next";
 
-import {
-    CreateDepartmentFormValues,
-    IApiResponse,
-    IDepartment,
-    SignUpFormValues,
-    UserRoles,
-} from "@/types";
+import { CreateDepartmentFormValues, IApiResponse, IDepartment } from "@/types";
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";

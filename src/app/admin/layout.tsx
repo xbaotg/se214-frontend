@@ -1,5 +1,5 @@
 import { Inter } from "next/font/google";
-import Header from "@/components/admin/Header";
+import Header from "@/components/Header";
 import "@/styles/globals.css";
 import { Settings } from "lucide-react";
 import { adminNavItems } from "@/constants";
@@ -15,6 +15,7 @@ export default function UserLayout({
         <html lang="en" className="h-full">
             <body className={`${inter.className} flex flex-col h-full`}>
                 <Header
+                    headerContent="Admin"
                     navItems={adminNavItems}
                     icon={<Settings size={32} />}
                 />

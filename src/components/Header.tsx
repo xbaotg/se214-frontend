@@ -11,9 +11,11 @@ import { INavItem } from "@/types";
 
 const Header = ({
     icon,
+    headerContent,
     navItems,
 }: {
     icon: React.ReactNode;
+    headerContent: string;
     navItems: INavItem[];
 }) => {
     const [messageApi, contextHolder] = message.useMessage();
@@ -73,7 +75,9 @@ const Header = ({
                 <div className="container mx-auto px-4 h-full flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                         {icon}
-                        <span className="font-bold text-xl">Admin</span>
+                        <span className="font-bold text-xl">
+                            {headerContent}
+                        </span>
                     </div>
                     <nav className="flex space-x-4">
                         {navItems.map((item) => (
@@ -95,7 +99,7 @@ const Header = ({
                             className="ml-auto border-2 text-red-500"
                             onClick={handleLogout}
                         >
-                            Logout
+                            Đăng xuất
                         </Button>
                     </div>
                 </div>

@@ -4,21 +4,16 @@ import { SearchOutlined } from "@ant-design/icons";
 import { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
 import {
+    Divider,
     message,
     Table,
     Button,
     Input,
     Space,
-    Form,
-    Divider,
     InputNumber,
+    Select,
 } from "antd";
-import type {
-    InputRef,
-    TableColumnType,
-    FormProps,
-    InputNumberProps,
-} from "antd";
+import type { InputRef, FormProps, TableColumnType } from "antd";
 import { getCookie } from "cookies-next";
 
 import {
@@ -26,11 +21,15 @@ import {
     IApiResponse,
     ICourse,
     ICourseResponse,
+    ITeacher,
+    IDepartment,
+    UserRoles,
 } from "@/types";
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
 import { Plus } from "lucide-react";
+import { dayOptions, lessionOptions, semesterOptions } from "@/constants";
 
 type DataIndex = keyof ICourse;
 
@@ -47,17 +46,32 @@ const AdminCoursesPage = () => {
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [open, setOpen] = useState<boolean>(false);
+    const [teacherOptions, setTeacherOptions] = useState<
+        {
+            value: string;
+            label: string;
+        }[]
+    >([]);
+    const [departmentOptions, setDepartmentOptions] = useState<
+        {
+            value: string;
+            label: string;
+        }[]
+    >([]);
+
     const [courseCreateForm, setCourseCreateForm] =
         useState<CreateCourseFormValues>({
+            course_code: "",
+            course_id: "",
             course_teacher_id: "",
             course_department: "",
             course_name: "",
             course_fullname: "",
             course_credit: 0,
-            course_year: 0,
-            course_semester: 0,
-            course_start_shift: 0,
-            course_end_shift: 0,
+            course_year: new Date().getFullYear(),
+            course_semester: 1,
+            course_start_shift: 1,
+            course_end_shift: 10,
             course_day: "",
             max_enroll: 0,
             current_enroll: 0,
@@ -69,27 +83,60 @@ const AdminCoursesPage = () => {
             router.push("/login");
             return;
         }
-        const fetchCourses = async () => {
+        const fetchData = async () => {
             try {
-                const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/course/list`,
-                    {
+                const [
+                    response_fetch_courses,
+                    response_fetch_teachers,
+                    response_fetch_dapartments,
+                ] = await Promise.all([
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/list`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
                             Authorization: `Bearer ${token}`,
                         },
-                    }
-                );
-                if (response.ok) {
-                    const data: IApiResponse<ICourseResponse[]> =
-                        await response.json();
+                    }),
+                    fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/user/list?role=${UserRoles.Lecturer}`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    ),
+                    fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/department/list`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    ),
+                ]);
+                if (!response_fetch_courses.ok) {
+                    message.error("Failed to fetch courses");
+                }
+                if (!response_fetch_teachers.ok) {
+                    message.error("Failed to fetch teachers");
+                }
+                if (!response_fetch_dapartments.ok) {
+                    message.error("Failed to fetch departments");
+                }
+                const response_fetch_courses_data: IApiResponse<
+                    ICourseResponse[]
+                > = await response_fetch_courses.json();
 
-                    const fetch_courses = data.data.map((course) => ({
+                const fetch_courses = response_fetch_courses_data.data.map(
+                    (course) => ({
                         key: course.course_teacher_id,
                         course_id: course.course_teacher_id,
                         course_name: course.course_name,
-                        course_code: course.course_fullname,
+                        course_fullname: course.course_fullname,
                         course_room: course.course_room,
                         course_day: course.course_day,
                         course_time: generateString(
@@ -97,17 +144,37 @@ const AdminCoursesPage = () => {
                             course.course_end_shift
                         ),
                         course_size: `${course.current_enroll}/${course.max_enroll}`,
+                    })
+                );
+
+                const response_fetch_teachers_data: IApiResponse<ITeacher[]> =
+                    await response_fetch_teachers.json();
+
+                const fetch_teachers = response_fetch_teachers_data.data.map(
+                    (teacher) => ({
+                        value: teacher.id,
+                        label: teacher.user_fullname,
+                    })
+                );
+
+                const response_fetch_departments_data: IApiResponse<
+                    IDepartment[]
+                > = await response_fetch_dapartments.json();
+
+                const fetch_departments =
+                    response_fetch_departments_data.data.map((department) => ({
+                        value: department.department_id,
+                        label: department.department_name,
                     }));
 
-                    setCourses(fetch_courses);
-                } else {
-                    message.error("Failed to fetch courses");
-                }
+                setTeacherOptions(fetch_teachers);
+                setDepartmentOptions(fetch_departments);
+                setCourses(fetch_courses);
             } catch (error) {
                 message.error("Failed to fetch courses");
             }
         };
-        fetchCourses();
+        fetchData();
     }, []);
 
     const handleSearch = (
@@ -238,18 +305,18 @@ const AdminCoursesPage = () => {
     const columns = [
         {
             title: "Mã môn",
-            dataIndex: "course_id",
-            key: "course_id",
+            dataIndex: "course_name",
+            key: "course_name",
             render: (text: string) => (
                 <span className="text-blue-300 font-semibold">{text}</span>
             ),
-            ...getColumnSearchProps("course_id"),
+            ...getColumnSearchProps("course_name"),
         },
         {
             title: "Tên môn",
-            dataIndex: "course_name",
-            key: "course_name",
-            ...getColumnSearchProps("course_name"),
+            dataIndex: "course_fullname",
+            key: "course_fullname",
+            ...getColumnSearchProps("course_fullname"),
         },
         {
             title: "Phòng học",
@@ -323,6 +390,8 @@ const AdminCoursesPage = () => {
             course_room,
         } = values;
 
+        console.log(values);
+
         try {
             const result = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/course/create`,
@@ -364,6 +433,7 @@ const AdminCoursesPage = () => {
                         key: data.data.id,
                         course_id: data.data.id,
                         course_name: data.data.course_name,
+                        course_fullname: data.data.course_fullname,
                         course_room: data.data.course_room,
                         course_day: data.data.course_day,
                         course_time: generateString(
@@ -386,27 +456,209 @@ const AdminCoursesPage = () => {
         }
     };
 
-    const onChange: InputNumberProps["onChange"] = (value) => {
-        console.log("changed", value);
-    };
-
     const modalContent = (
         <>
-            <div className="flex">
-                <div className="flex flex-col">
-                    <div>
-                        <span>Thông tin môn học</span>
-                        <Input size="large" placeholder="Mã môn" />
-                        <Input size="large" placeholder="Tên môn" />
-                        <Input size="large" placeholder="Khoa" />
+            <div className="p-4">
+                <div className="flex gap-8">
+                    <div className="max-w-[50%] my-auto">
+                        <span className="flex text-blue-400 font-semibold text-lg justify-center">
+                            Thông Tin Môn Học
+                        </span>
+                        <Input
+                            size="middle"
+                            placeholder="Mã môn"
+                            value={courseCreateForm.course_name}
+                            onChange={(e) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_name: e.target.value,
+                                }));
+                            }}
+                            style={{ marginTop: "1rem" }}
+                        />
+                        <Input
+                            size="middle"
+                            placeholder="Tên môn"
+                            value={courseCreateForm.course_fullname}
+                            onChange={(e) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_fullname: e.target.value,
+                                }));
+                            }}
+                            style={{ marginTop: "1rem" }}
+                        />
+                        <Select
+                            size={"middle"}
+                            placeholder="Khoa"
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_department: value,
+                                }));
+                            }}
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                            }}
+                            options={departmentOptions}
+                        />
                         <InputNumber
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                                marginBottom: "1rem",
+                            }}
+                            placeholder="Số tín chỉ"
                             min={1}
                             max={10}
-                            value={courseCreateForm.course_credit}
-                            onChange={onChange}
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_credit: value,
+                                }));
+                            }}
                         />
-                        ;
                     </div>
+                    <div className="max-w-[50%]">
+                        <span className="flex text-blue-400 font-semibold text-lg justify-center">
+                            Chi Tiết Môn Học
+                        </span>
+                        <Select
+                            size={"middle"}
+                            placeholder="Giảng viên"
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_teacher_id: value,
+                                }));
+                            }}
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                            }}
+                            options={teacherOptions}
+                        />
+                        <Input
+                            size="middle"
+                            placeholder="Phòng học"
+                            value={courseCreateForm.course_room}
+                            onChange={(e) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_room: e.target.value,
+                                }));
+                            }}
+                            style={{ marginTop: "1rem" }}
+                        />
+                        <Select
+                            size={"middle"}
+                            placeholder="Tiết bắt đầu"
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_start_shift: value,
+                                }));
+                            }}
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                            }}
+                            options={lessionOptions}
+                        />
+                        <Select
+                            size={"middle"}
+                            placeholder="Tiết kết thúc"
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_end_shift: value,
+                                }));
+                            }}
+                            // @ts-ignores
+                            status={`${
+                                courseCreateForm.course_start_shift &&
+                                courseCreateForm.course_end_shift &&
+                                courseCreateForm.course_start_shift >
+                                    courseCreateForm.course_end_shift
+                                    ? "error"
+                                    : undefined
+                            }`}
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                            }}
+                            options={lessionOptions}
+                        />
+                        <InputNumber
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                                marginBottom: "1rem",
+                            }}
+                            placeholder="Sĩ số tối đa"
+                            min={1}
+                            max={1000}
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    max_enroll: value,
+                                }));
+                            }}
+                        />
+                    </div>
+                </div>
+                <Divider />
+                <div className="flex justify-center gap-8 my-4">
+                    <div className="w-[40%]">
+                        <Select
+                            size={"middle"}
+                            placeholder="Học kỳ"
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_semester: value,
+                                }));
+                            }}
+                            style={{
+                                width: "100%",
+                            }}
+                            options={semesterOptions}
+                        />
+                    </div>
+                    <div>
+                        <InputNumber
+                            style={{
+                                width: "100%",
+                            }}
+                            placeholder="Năm học"
+                            min={1}
+                            max={new Date().getFullYear()}
+                            onChange={(value) => {
+                                setCourseCreateForm((prev) => ({
+                                    ...prev,
+                                    course_year: value,
+                                }));
+                            }}
+                        />
+                    </div>
+                </div>
+                <div className="flex justify-center">
+                    <Select
+                        size={"middle"}
+                        placeholder="Ngày học"
+                        onChange={(value) => {
+                            setCourseCreateForm((prev) => ({
+                                ...prev,
+                                course_day: value,
+                            }));
+                        }}
+                        style={{
+                            width: "80%",
+                            marginBottom: "1rem",
+                        }}
+                        options={dayOptions}
+                    />
                 </div>
             </div>
         </>
@@ -420,7 +672,10 @@ const AdminCoursesPage = () => {
                 <AddModal
                     open={open}
                     setOpen={setOpen}
-                    onFinish={onFinish}
+                    onFinish={(e) => {
+                        e.preventDefault();
+                        onFinish(courseCreateForm);
+                    }}
                     onFinishFailed={onFinishFailed}
                     buttonIcon={<Plus size={16} />}
                     buttonContent="Thêm môn học"

@@ -146,7 +146,7 @@ const AddModal = ({
                             }}
                         >
                             <Button onClick={handleCancel}>{"Hủy"}</Button>
-                            <Button type="primary" onClick={handleCancel}>
+                            <Button type="primary" onClick={onFinish}>
                                 {submitButtonContent}
                             </Button>
                         </div>

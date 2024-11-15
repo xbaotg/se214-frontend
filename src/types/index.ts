@@ -17,6 +17,7 @@ export interface INavItem {
 
 export interface ITeacher {
     key?: string;
+    id: string;
     username: string;
     email: string;
     user_fullname: string;
@@ -36,14 +37,27 @@ export interface ICourse {
     key?: string;
     course_id: string;
     course_name: string;
+    course_department?: string;
+    course_year?: number;
+    course_semester?: number;
+    course_credit?: number;
+    course_fullname: string;
     course_room: string;
     course_day: string;
     course_time: string;
     course_size: string;
 }
 
+export interface ICourseMetadata {
+    department_name: string;
+    year: number;
+    credit: number;
+    semester: number;
+}
+
 export interface ICourseResponse {
     id: string;
+    course_code: string;
     course_teacher_id: string;
     course_department: string;
     course_name: string;
@@ -74,17 +88,19 @@ export interface CreateDepartmentFormValues {
 }
 
 export interface CreateCourseFormValues {
+    course_code: string;
+    course_id: string;
     course_teacher_id: string;
     course_department: string;
     course_name: string;
     course_fullname: string;
-    course_credit: number;
-    course_year: number;
-    course_semester: number;
-    course_start_shift: number;
-    course_end_shift: number;
+    course_credit: number | null | string;
+    course_year: number | null | string;
+    course_semester: number | null | string;
+    course_start_shift: number | null | string;
+    course_end_shift: number | null | string;
     course_day: string;
-    max_enroll: number;
+    max_enroll: number | null | string;
     current_enroll: number;
     course_room: string;
 }
@@ -98,6 +114,7 @@ export interface IListUserResponse {
 }
 
 export interface SignUpResponse {
+    id: string;
     username: string;
     detail?: string;
 }
