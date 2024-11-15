@@ -5,14 +5,17 @@ import { setCookie } from "cookies-next";
 import { Button, Form, Input, FormProps, message } from "antd";
 import { ValidateErrorEntity } from "rc-field-form/lib/interface";
 import { useSearchParams, useRouter } from "next/navigation";
+import { IApiResponse } from "@/types";
 
 interface LoginFormValues {
     username: string;
     password: string;
 }
 
-interface LoginResponse {
+interface ILoginResponse {
     access_token: string;
+    refresh_token: string;
+    user_role: string;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -86,32 +89,30 @@ const SignInContent: React.FC = () => {
     const onFinish: FormProps["onFinish"] = async (values: LoginFormValues) => {
         const { username, password } = values;
 
-        const path = localStorage.getItem("redirectPath") || "/knowledge";
-
-        const body = new URLSearchParams();
-        body.append("grant_type", "password");
-        body.append("username", username);
-        body.append("password", password);
-        body.append("scope", "");
-        body.append("client_id", "client_id");
-        body.append("client_secret", "client_secret");
-
         try {
             const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/users/login`,
+                `${process.env.NEXT_PUBLIC_API_URL}/login`,
                 {
                     method: "POST",
                     headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
+                        "Content-Type": "application/json",
                     },
-                    body: body.toString(),
+                    body: JSON.stringify({ username, password }),
                 }
             );
 
             if (response.ok) {
-                const data: LoginResponse = await response.json();
+                const data: IApiResponse<ILoginResponse> =
+                    await response.json();
 
-                setCookie("access_token", data.access_token, {
+                console.log(data);
+
+                setCookie("access_token", data.data.access_token, {
+                    maxAge: 30 * 60,
+                    path: "/",
+                });
+
+                setCookie("refresh_token", data.data.refresh_token, {
                     maxAge: 30 * 60,
                     path: "/",
                 });
@@ -120,8 +121,19 @@ const SignInContent: React.FC = () => {
                     content: "Login successful.",
                     duration: 1,
                 });
+                const path = localStorage.getItem("redirectPath") || "/";
 
-                setTimeout(() => router.push(path), 1000);
+                if (path === "/") {
+                    if (data.data.user_role === "admin") {
+                        router.push("/admin");
+                    } else if (data.data.user_role === "lecturer") {
+                        router.push("/lecturer");
+                    } else {
+                        router.push("/user");
+                    }
+                }
+
+                // setTimeout(() => router.push(path), 1000);
             } else if (response.status === 401) {
                 errorMessage({
                     content: "Invalid username or password.",

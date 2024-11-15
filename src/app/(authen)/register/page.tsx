@@ -1,20 +1,9 @@
 "use client";
 
 import React from "react";
-import { Button, Form, Input, FormProps, message } from "antd";
 import { useRouter } from "next/navigation";
-
-interface SignUpFormValues {
-    username: string;
-    email: string;
-    password: string;
-    retypePassword: string;
-}
-
-interface SignUpResponse {
-    username: string;
-    detail?: string;
-}
+import { SignUpFormValues, SignUpResponse, UserRoles } from "@/types";
+import { Button, Form, Input, FormProps, message, InputNumber } from "antd";
 
 const SignUp: React.FC = () => {
     const router = useRouter();
@@ -51,7 +40,14 @@ const SignUp: React.FC = () => {
     const onFinish: FormProps["onFinish"] = async (
         values: SignUpFormValues
     ) => {
-        const { username, email, password, retypePassword } = values;
+        const {
+            username,
+            email,
+            password,
+            retypePassword,
+            user_fullname,
+            year,
+        } = values;
 
         if (password !== retypePassword) {
             errorMessage({
@@ -62,13 +58,20 @@ const SignUp: React.FC = () => {
 
         try {
             const result = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_API_URL}/api/users/create`,
+                `${process.env.NEXT_PUBLIC_API_URL}/register`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ username, email, password }),
+                    body: JSON.stringify({
+                        username: username,
+                        password: password,
+                        user_fullname: user_fullname,
+                        year: year,
+                        user_role: UserRoles.User,
+                        user_email: email,
+                    }),
                 }
             );
 
@@ -108,7 +111,10 @@ const SignUp: React.FC = () => {
                     name="basic"
                     labelCol={{ span: 6 }}
                     wrapperCol={{ span: 18 }}
-                    initialValues={{ remember: true }}
+                    initialValues={{
+                        remember: true,
+                        year: new Date().getFullYear(),
+                    }}
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
@@ -124,6 +130,19 @@ const SignUp: React.FC = () => {
                         ]}
                     >
                         <Input autoFocus />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Full Name"
+                        name="user_fullname"
+                        rules={[
+                            {
+                                required: true,
+                                message: "Please input your username!",
+                            },
+                        ]}
+                    >
+                        <Input />
                     </Form.Item>
 
                     <Form.Item
@@ -190,6 +209,19 @@ const SignUp: React.FC = () => {
                         ]}
                     >
                         <Input.Password />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="Year"
+                        name="year"
+                        rules={[
+                            {
+                                required: true,
+                                message: "Please input your year!",
+                            },
+                        ]}
+                    >
+                        <InputNumber max={new Date().getFullYear()} />
                     </Form.Item>
 
                     <div
