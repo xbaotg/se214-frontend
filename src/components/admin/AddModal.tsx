@@ -23,8 +23,8 @@ const AddModal = ({
     formItems?: React.JSX.Element | null;
     modalContent?: React.ReactNode | null;
     submitButtonContent: string;
-    onFinish: FormProps["onFinish"] | ((values: any) => void);
-    onFinishFailed: FormProps["onFinishFailed"] | ((errorInfo: any) => void);
+    onFinish: FormProps["onFinish"];
+    onFinishFailed: FormProps["onFinishFailed"];
 }) => {
     const [disabled, setDisabled] = useState<boolean>(true);
     const [bounds, setBounds] = useState({
@@ -40,6 +40,7 @@ const AddModal = ({
     };
 
     const handleCancel = (e: React.MouseEvent<HTMLElement>) => {
+        e.preventDefault();
         setOpen(false);
     };
 

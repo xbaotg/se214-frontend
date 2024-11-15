@@ -167,7 +167,7 @@ const SignInContent: React.FC = () => {
         <div style={styles.container}>
             {contextHolder}
             <div style={styles.formWrapper}>
-                <h1 style={styles.header}>Sign In</h1>
+                <h1 style={styles.header}>Đăng nhập tài khoản</h1>
                 <Form
                     name="basic"
                     labelCol={{ span: 6 }}
@@ -178,7 +178,7 @@ const SignInContent: React.FC = () => {
                     autoComplete="off"
                 >
                     <Form.Item
-                        label="Username"
+                        label="Tên đăng nhập"
                         name="username"
                         rules={[
                             {
@@ -191,7 +191,7 @@ const SignInContent: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                        label="Password"
+                        label="Mật khẩu"
                         name="password"
                         rules={[
                             {
@@ -211,17 +211,17 @@ const SignInContent: React.FC = () => {
                     >
                         <Form.Item wrapperCol={{ offset: 6, span: 18 }}>
                             <Button type="primary" htmlType="submit">
-                                Login
+                                Đăng nhập
                             </Button>
                         </Form.Item>
 
                         <div style={styles.footer}>
-                            Don&apos;t have an account?&nbsp;
+                            {"Chưa có tài khoản? "}
                             <a
                                 href="/register"
                                 className="text-blue-500 block ml-4"
                             >
-                                Sign Up
+                                Đăng ký
                             </a>
                         </div>
                     </div>

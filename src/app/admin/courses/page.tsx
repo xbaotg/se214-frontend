@@ -171,6 +171,7 @@ const AdminCoursesPage = () => {
                 setDepartmentOptions(fetch_departments);
                 setCourses(fetch_courses);
             } catch (error) {
+                console.error("Failed to fetch courses: ", error);
                 message.error("Failed to fetch courses");
             }
         };
@@ -280,7 +281,7 @@ const AdminCoursesPage = () => {
                       .includes((value as string).toLowerCase())
                 : false,
 
-        // @ts-ignore
+        // @ts-expect-error - Not sure why this is throwing an error
         filterDropdownProps: {
             onOpenChange(open: boolean) {
                 if (open) {
@@ -575,7 +576,7 @@ const AdminCoursesPage = () => {
                                     course_end_shift: value,
                                 }));
                             }}
-                            // @ts-ignores
+                            // @ts-expect-error - temporary fix
                             status={`${
                                 courseCreateForm.course_start_shift &&
                                 courseCreateForm.course_end_shift &&

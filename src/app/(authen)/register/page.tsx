@@ -106,7 +106,7 @@ const SignUp: React.FC = () => {
         <div style={styles.container}>
             {contextHolder}
             <div style={styles.formWrapper}>
-                <h1 style={styles.header}>Sign Up</h1>
+                <h1 style={styles.header}>Đăng Ký Tài Khoản</h1>
                 <Form
                     name="basic"
                     labelCol={{ span: 6 }}
@@ -120,7 +120,7 @@ const SignUp: React.FC = () => {
                     autoComplete="off"
                 >
                     <Form.Item
-                        label="Username"
+                        label="Tên đăng nhập"
                         name="username"
                         rules={[
                             {
@@ -133,7 +133,7 @@ const SignUp: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                        label="Full Name"
+                        label="Họ và tên"
                         name="user_fullname"
                         rules={[
                             {
@@ -160,7 +160,7 @@ const SignUp: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                        label="Password"
+                        label="Mật khẩu"
                         name="password"
                         rules={[
                             {
@@ -185,7 +185,7 @@ const SignUp: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                        label="Retype Password"
+                        label="Nhập lại mật khẩu"
                         name="retypePassword"
                         dependencies={["password"]}
                         rules={[
@@ -212,7 +212,7 @@ const SignUp: React.FC = () => {
                     </Form.Item>
 
                     <Form.Item
-                        label="Year"
+                        label="Năm sinh"
                         name="year"
                         rules={[
                             {
@@ -232,16 +232,16 @@ const SignUp: React.FC = () => {
                     >
                         <Form.Item wrapperCol={{ offset: 6, span: 18 }}>
                             <Button type="primary" htmlType="submit">
-                                Register
+                                Đăng ký
                             </Button>
                         </Form.Item>
                         <div style={styles.footer}>
-                            Already have an account?&nbsp;
+                            {"Đã có tài khoản? "}
                             <a
                                 href="/login"
                                 className="text-blue-500 block ml-4"
                             >
-                                Log In
+                                Đăng nhập
                             </a>
                         </div>
                     </div>

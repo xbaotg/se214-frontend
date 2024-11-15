@@ -4,7 +4,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
 import { message, Table, Button, Input, Space, Form, InputNumber } from "antd";
-import type { InputRef, TableProps, TableColumnType, FormProps } from "antd";
+import type { InputRef, TableColumnType, FormProps } from "antd";
 import { getCookie } from "cookies-next";
 
 import {
@@ -19,8 +19,6 @@ import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
 import { Plus } from "lucide-react";
-
-type OnChange = NonNullable<TableProps<ITeacher>["onChange"]>;
 
 type DataIndex = keyof ITeacher;
 
@@ -67,6 +65,7 @@ const AdminTeacherPage = () => {
                     message.error("Failed to fetch teachers");
                 }
             } catch (error) {
+                console.error("Failed to fetch teachers: ", error);
                 message.error("Failed to fetch teachers");
             }
         };
@@ -176,7 +175,7 @@ const AdminTeacherPage = () => {
                       .includes((value as string).toLowerCase())
                 : false,
 
-        // @ts-ignore
+        // @ts-expect-error - Not sure why antd is throwing an error here
         filterDropdownProps: {
             onOpenChange(open: boolean) {
                 if (open) {

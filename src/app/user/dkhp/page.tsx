@@ -99,6 +99,7 @@ const DKHPPage = () => {
             setCourses([...courses]);
             setSelectedRowKeys([]);
         } catch (error) {
+            console.error("Failed to register courses: ", error);
             messageApi.error("Failed to register courses");
         } finally {
             setLoading(false);
@@ -191,6 +192,7 @@ const DKHPPage = () => {
                 setDepartments(fetch_departments);
                 setCourses(fetch_courses);
             } catch (error) {
+                console.error("Failed to fetch courses: ", error);
                 message.error("Failed to fetch courses");
             }
         };
@@ -313,7 +315,7 @@ const DKHPPage = () => {
                       .includes((value as string).toLowerCase())
                 : false,
 
-        // @ts-ignore
+        // @ts-expect-error - ignore
         filterDropdownProps: {
             onOpenChange(open: boolean) {
                 if (open) {

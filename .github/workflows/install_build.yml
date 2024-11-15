@@ -1,0 +1,30 @@
+name: Frontend (install and build)
+
+on:
+    push:
+        branches: ["main"]
+    pull_request:
+        branches: ["main"]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+
+        strategy:
+            matrix:
+                node-version: [20.x, 22.x]
+
+        steps:
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+
+            - uses: actions/checkout@v4
+            - name: Run
+              run: |
+                  cp .env.example .env.local
+
+                  npm install
+
+                  npm run build

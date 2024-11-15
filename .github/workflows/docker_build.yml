@@ -1,0 +1,18 @@
+name: Production-Ready
+
+on:
+    push:
+        branches: ["main", "hien_dev"]
+    pull_request:
+        branches: ["main", "hien_dev"]
+
+jobs:
+    build-production:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+            - name: docker build
+              run: |
+                  cp .env.example .env.local
+                  docker build -t app .

@@ -60,6 +60,7 @@ const AdminDepartmentPage = () => {
                     message.error("Failed to fetch departments");
                 }
             } catch (error) {
+                console.error("Failed to fetch departments: ", error);
                 message.error("Failed to fetch departments");
             }
         };
@@ -169,7 +170,7 @@ const AdminDepartmentPage = () => {
                       .includes((value as string).toLowerCase())
                 : false,
 
-        // @ts-ignore
+        // @ts-expect-error - Not sure why this is throwing an error
         filterDropdownProps: {
             onOpenChange(open: boolean) {
                 if (open) {
