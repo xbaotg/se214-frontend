@@ -84,7 +84,7 @@ const Header = ({
                             <Link
                                 key={item.path}
                                 href={item.path}
-                                className={`px-3 py-2 relative ${
+                                className={`px-3 py-2 relative font-semibold text-sm md:text-lg ${
                                     isActive(item.path)
                                         ? "text-blue-500 font-bold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-blue-500"
                                         : "text-gray-600 hover:bg-blue-500 hover:text-white hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-[2px] hover:after:bg-white hover:rounded-lg transition-all duration-300"

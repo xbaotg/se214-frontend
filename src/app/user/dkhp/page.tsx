@@ -13,6 +13,7 @@ import { getCookie } from "cookies-next";
 import { IApiResponse, ICourse, ICourseResponse, IDepartment } from "@/types";
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
+import React from "react";
 
 type DataIndex = keyof ICourse;
 
@@ -34,6 +35,9 @@ const DKHPPage = () => {
     const [searchedColumn, setSearchedColumn] = useState("");
     const [messageApi, contextHolder] = message.useMessage();
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
+    const [alreadyRegisteredCourses, setAlreadyRegisteredCourses] = useState<
+        React.Key[]
+    >([]);
     const [departments, setDepartments] = useState<IDepartmentFilter[]>([]);
 
     const [loading, setLoading] = useState(false);
@@ -43,10 +47,20 @@ const DKHPPage = () => {
         const selectedCourses = selectedRowKeys.map((course_id) =>
             getCourseByKey(course_id as string)
         );
+        const unSelectedCourses = alreadyRegisteredCourses
+            .map((course_id) => getCourseByKey(course_id as string))
+            .filter((course) => !selectedCourses.includes(course));
         try {
+            console.log("selectedCourses: ", selectedCourses);
             const response = await Promise.all(
                 selectedCourses.map((course) => {
                     if (!course) return;
+                    if (alreadyRegisteredCourses.includes(course.course_id)) {
+                        messageApi.info(
+                            `Course ${course.course_name} already registered`
+                        );
+                        return;
+                    }
                     return fetch(
                         `${process.env.NEXT_PUBLIC_API_URL}/user/course/register`,
                         {
@@ -64,14 +78,101 @@ const DKHPPage = () => {
                     );
                 })
             );
-            // Count number of successful requests
-            const results = response.map((res) => {
+
+            const unSubResponse = await Promise.all(
+                unSelectedCourses.map((course) => {
+                    if (!course) return;
+                    if (!alreadyRegisteredCourses.includes(course.course_id)) {
+                        messageApi.info(
+                            `Course ${course.course_name} not registered`
+                        );
+                        return;
+                    }
+                    messageApi.info(`Unregister course ${course.course_name}`);
+                    return fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/user/course/unregister`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                            body: JSON.stringify({
+                                course_id: course.course_id,
+                                course_year: course.course_year,
+                                course_semester: course.course_semester,
+                            }),
+                        }
+                    );
+                })
+            );
+            const unSubResults = unSubResponse.map((res) => {
                 return res?.ok;
             });
 
-            const successfulIndexes = results.map((result, index) =>
+            const unSubSuccessfulIndexes = unSubResults.map((result, index) =>
                 result ? index : -1
             );
+
+            const unSubRegisteredCourses = unSubSuccessfulIndexes.map(
+                (index) => unSelectedCourses[index]
+            );
+
+            unSubRegisteredCourses.forEach((course) => {
+                const index = courses.findIndex(
+                    (c) => c.course_id === course?.course_id
+                );
+                if (index !== -1) {
+                    courses[index].course_size = `${
+                        parseInt(course?.course_size.split("/")[0] || "0") - 1
+                    }/${parseInt(course?.course_size.split("/")[1] || "0")}`;
+                    // setSelectedRowKeys((keys) =>
+                    //     keys.filter((key) => key === course?.course_id)
+                    // );
+                }
+            });
+
+            // Count number of successful requests
+            const results = response.map((res) => {
+                if (!res) return true;
+                return res?.ok;
+            });
+
+            const successfulIndexes = results.map((result, index) => {
+                return result ? index : -1
+            });
+            
+            const unSuccessfulIndexes = results.map((result, index) => {
+                return result ? -1 : index
+            });
+
+            const unSuccessfulCourses = unSuccessfulIndexes.map(
+                (index) => selectedCourses[index]
+            );
+            unSuccessfulCourses.forEach((course) => {
+                if (!course) return;
+                const index = courses.findIndex(
+                    (c) => c.course_id === course?.course_id
+                );
+                console.log("index: ", index);
+                messageApi.error(
+                    `Failed to register course ${course?.course_name}`
+                );
+                if (index !== -1) {
+                    // const filteredKeys = selectedRowKeys.filter(
+                    //     (key) => key !== courses[index].course_id
+                    // );
+                    // console.log("filteredKeys: ", filteredKeys);
+
+                    setSelectedRowKeys((keys) =>
+                        keys.filter((key) => key !== courses[index].course_id)
+                    );
+                    setAlreadyRegisteredCourses((keys) =>
+                        keys.filter((key) => key !== courses[index].course_id)
+                    );
+                }
+            });
+
 
             const registeredCourses = successfulIndexes.map(
                 (index) => selectedCourses[index]
@@ -81,10 +182,13 @@ const DKHPPage = () => {
                 const index = courses.findIndex(
                     (c) => c.course_id === course?.course_id
                 );
-                if (index !== -1) {
+                if (index !== -1 && !alreadyRegisteredCourses.includes(courses[index].course_id)) {
                     courses[index].course_size = `${
                         parseInt(course?.course_size.split("/")[0] || "0") + 1
                     }/${parseInt(course?.course_size.split("/")[1] || "0")}`;
+                    // setSelectedRowKeys((keys) =>
+                    //     keys.filter((key) => key !== course?.course_id)
+                    // );
                 }
             });
 
@@ -92,12 +196,14 @@ const DKHPPage = () => {
                 (result) => result
             ).length;
 
+
             messageApi.success(
                 `Successfully registered ${successfulRequests} courses`
             );
 
             setCourses([...courses]);
-            setSelectedRowKeys([]);
+            setAlreadyRegisteredCourses(selectedRowKeys.filter((key) => !unSuccessfulCourses.includes(getCourseByKey(key as string))));
+            // setSelectedRowKeys([...selectedRowKeys]);
         } catch (error) {
             console.error("Failed to register courses: ", error);
             messageApi.error("Failed to register courses");
@@ -114,9 +220,8 @@ const DKHPPage = () => {
     const rowSelection: TableRowSelection<ICourse> = {
         selectedRowKeys,
         onChange: onSelectChange,
+        type: "checkbox",
     };
-
-    const hasSelected = selectedRowKeys.length > 0;
 
     useEffect(() => {
         if (!token) {
@@ -125,35 +230,52 @@ const DKHPPage = () => {
         }
         const fetchData = async () => {
             try {
-                const [response_fetch_courses, response_fetch_departments] =
-                    await Promise.all([
-                        fetch(
-                            `${process.env.NEXT_PUBLIC_API_URL}/course/list`,
-                            {
-                                method: "GET",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    Authorization: `Bearer ${token}`,
-                                },
-                            }
-                        ),
-                        fetch(
-                            `${process.env.NEXT_PUBLIC_API_URL}/department/list`,
-                            {
-                                method: "GET",
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    Authorization: `Bearer ${token}`,
-                                },
-                            }
-                        ),
-                    ]);
+                const [
+                    response_fetch_courses,
+                    response_fetch_departments,
+                    response_fetch_registered,
+                ] = await Promise.all([
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/list`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }),
+                    fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/department/list`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    ),
+                    // BCK code this for registered courses [
+                    fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=2024&course_semester=1`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    ),
+                    // BCK code this ]
+                ]);
                 if (!response_fetch_courses.ok) {
                     message.error("Failed to fetch courses");
                 }
                 if (!response_fetch_departments.ok) {
                     message.error("Failed to fetch departments");
                 }
+                // BCK code this [
+                if (!response_fetch_registered.ok) {
+                    message.error("Failed to fetch registered courses");
+                }
+                // BCK code this ]
 
                 const response_fetch_courses_data: IApiResponse<
                     ICourseResponse[]
@@ -162,6 +284,20 @@ const DKHPPage = () => {
                 const response_fetch_departments_data: IApiResponse<
                     IDepartment[]
                 > = await response_fetch_departments.json();
+
+                // BCK code this for registered courses [
+                const response_fetch_registered_data: IApiResponse<
+                    ICourseResponse[]
+                > = await response_fetch_registered.json();
+
+                const fetch_registered_courses_id =
+                    response_fetch_registered_data.data.map(
+                        (course) => course.id
+                    );
+
+                setSelectedRowKeys(fetch_registered_courses_id);
+                setAlreadyRegisteredCourses(fetch_registered_courses_id);
+                // BCK code this ]
 
                 const fetch_departments =
                     response_fetch_departments_data.data.map((department) => ({
@@ -337,6 +473,24 @@ const DKHPPage = () => {
             ),
     });
 
+    const rowStyle = (course_id: string) => {
+        const unSelectedCourses = alreadyRegisteredCourses.includes(course_id);
+        if (unSelectedCourses) {
+            // red color
+            return { background: "#ffcccc" };
+        }
+        if (alreadyRegisteredCourses.includes(course_id)) {
+            // green color
+            return { background: "#ccffcc" };
+        }
+        if (selectedRowKeys.includes(course_id)) {
+            // blue color
+            return { background: "#cce6ff" };
+        }
+
+        return {};
+    };
+
     const columns = [
         {
             title: "Mã môn",
@@ -385,7 +539,7 @@ const DKHPPage = () => {
                 </span>
                 <Button
                     onClick={start}
-                    disabled={!hasSelected}
+                    // disabled={!hasSelected}
                     loading={loading}
                 >
                     Đăng ký
@@ -395,6 +549,11 @@ const DKHPPage = () => {
                 rowSelection={rowSelection}
                 dataSource={courses}
                 columns={columns}
+                onRow={(record) => {
+                    return {
+                        style: rowStyle(record.course_id),
+                    };
+                }}
                 expandable={{
                     expandRowByClick: true,
                     expandedRowRender: (record) => {

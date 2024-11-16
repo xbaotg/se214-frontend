@@ -31,6 +31,7 @@ const AdminTeacherPage = () => {
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [open, setOpen] = useState<boolean>(false);
+    const [form] = Form.useForm();
 
     useEffect(() => {
         if (!token) {
@@ -49,9 +50,9 @@ const AdminTeacherPage = () => {
                         },
                     }
                 );
+                const data: IApiResponse<IListUserResponse[]> =
+                    await response.json();
                 if (response.ok) {
-                    const data: IApiResponse<IListUserResponse[]> =
-                        await response.json();
                     const fetch_teachers = data.data.map((teacher) => ({
                         key: teacher.id,
                         id: teacher.id,
@@ -446,6 +447,7 @@ const AdminTeacherPage = () => {
                     open={open}
                     setOpen={setOpen}
                     onFinish={onFinish}
+                    form={form}
                     onFinishFailed={onFinishFailed}
                     buttonIcon={<Plus size={16} />}
                     buttonContent="Thêm giảng viên"

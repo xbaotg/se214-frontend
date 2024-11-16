@@ -105,14 +105,17 @@ const SignInContent: React.FC = () => {
                 const data: IApiResponse<ILoginResponse> =
                     await response.json();
 
-                console.log(data);
-
                 setCookie("access_token", data.data.access_token, {
                     maxAge: 30 * 60,
                     path: "/",
                 });
 
                 setCookie("refresh_token", data.data.refresh_token, {
+                    maxAge: 30 * 60,
+                    path: "/",
+                });
+
+                setCookie("user_role", data.data.user_role, {
                     maxAge: 30 * 60,
                     path: "/",
                 });
@@ -126,8 +129,8 @@ const SignInContent: React.FC = () => {
                 if (path === "/") {
                     if (data.data.user_role === "admin") {
                         router.push("/admin");
-                    } else if (data.data.user_role === "lecturer") {
-                        router.push("/lecturer");
+                        // } else if (data.data.user_role === "lecturer") {
+                        //     router.push("/lecturer");
                     } else {
                         router.push("/user");
                     }

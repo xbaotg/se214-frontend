@@ -90,8 +90,8 @@ export interface CreateDepartmentFormValues {
 export interface CreateCourseFormValues {
     course_code: string;
     course_id: string;
-    course_teacher_id: string;
-    course_department: string;
+    course_teacher_id: string | null;
+    course_department: string | null;
     course_name: string;
     course_fullname: string;
     course_credit: number | null | string;
@@ -99,7 +99,7 @@ export interface CreateCourseFormValues {
     course_semester: number | null | string;
     course_start_shift: number | null | string;
     course_end_shift: number | null | string;
-    course_day: string;
+    course_day: string | null;
     max_enroll: number | null | string;
     current_enroll: number;
     course_room: string;

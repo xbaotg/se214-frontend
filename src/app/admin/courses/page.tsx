@@ -8,10 +8,12 @@ import {
     message,
     Table,
     Button,
+    Form,
     Input,
     Space,
     InputNumber,
     Select,
+    Popconfirm,
 } from "antd";
 import type { InputRef, FormProps, TableColumnType } from "antd";
 import { getCookie } from "cookies-next";
@@ -28,7 +30,7 @@ import {
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { dayOptions, lessionOptions, semesterOptions } from "@/constants";
 
 type DataIndex = keyof ICourse;
@@ -39,6 +41,7 @@ const generateString = (a: number, b: number) => {
 
 const AdminCoursesPage = () => {
     const router = useRouter();
+    const [form] = Form.useForm();
     const token = getCookie("refresh_token");
     const [courses, setCourses] = useState<ICourse[]>([]);
     const [searchText, setSearchText] = useState("");
@@ -63,20 +66,40 @@ const AdminCoursesPage = () => {
         useState<CreateCourseFormValues>({
             course_code: "",
             course_id: "",
-            course_teacher_id: "",
-            course_department: "",
+            course_teacher_id: null,
+            course_department: null,
             course_name: "",
             course_fullname: "",
-            course_credit: 0,
+            course_credit: null,
             course_year: new Date().getFullYear(),
-            course_semester: 1,
-            course_start_shift: 1,
-            course_end_shift: 10,
-            course_day: "",
-            max_enroll: 0,
+            course_semester: null,
+            course_start_shift: null,
+            course_end_shift: null,
+            course_day: null,
+            max_enroll: null,
             current_enroll: 0,
             course_room: "",
         });
+
+    const resetCreateCourseForm = () => {
+        setCourseCreateForm({
+            course_code: "",
+            course_id: "",
+            course_teacher_id: null,
+            course_department: null,
+            course_name: "",
+            course_fullname: "",
+            course_credit: null,
+            course_year: new Date().getFullYear(),
+            course_semester: null,
+            course_start_shift: null,
+            course_end_shift: null,
+            course_day: null,
+            max_enroll: null,
+            current_enroll: 0,
+            course_room: "",
+        });
+    };
 
     useEffect(() => {
         if (!token) {
@@ -133,8 +156,8 @@ const AdminCoursesPage = () => {
 
                 const fetch_courses = response_fetch_courses_data.data.map(
                     (course) => ({
-                        key: course.course_teacher_id,
-                        course_id: course.course_teacher_id,
+                        key: course.id,
+                        course_id: course.id,
                         course_name: course.course_name,
                         course_fullname: course.course_fullname,
                         course_room: course.course_room,
@@ -340,6 +363,27 @@ const AdminCoursesPage = () => {
             dataIndex: "course_size",
             key: "course_size",
         },
+        {
+            title: "Thao tác",
+            key: "action",
+            // @ts-expect-error - Temporary fix
+            render: (_, record: ICourse) => (
+                <Space size="middle">
+                    <div className="flex">
+                        <div className="cursor-pointer">
+                            <Popconfirm
+                                title="Sure to cancel?"
+                                onConfirm={() => {
+                                    handleDeleteCourse(record.course_id);
+                                }}
+                            >
+                                <Trash2 size={16} color="red" />
+                            </Popconfirm>
+                        </div>
+                    </div>
+                </Space>
+            ),
+        },
     ];
 
     const successMessage = ({
@@ -374,7 +418,7 @@ const AdminCoursesPage = () => {
         console.log("Failed:", errorInfo);
     };
 
-    const onFinish = async (values: CreateCourseFormValues) => {
+    const onFinish = async () => {
         const {
             course_teacher_id,
             course_department,
@@ -389,9 +433,7 @@ const AdminCoursesPage = () => {
             max_enroll,
             current_enroll,
             course_room,
-        } = values;
-
-        console.log(values);
+        } = courseCreateForm;
 
         try {
             const result = await fetch(
@@ -427,6 +469,24 @@ const AdminCoursesPage = () => {
                     duration: 1,
                 });
 
+                setCourseCreateForm({
+                    course_code: "",
+                    course_id: "",
+                    course_teacher_id: "",
+                    course_department: "",
+                    course_name: "",
+                    course_fullname: "",
+                    course_credit: 0,
+                    course_year: new Date().getFullYear(),
+                    course_semester: 0,
+                    course_start_shift: 0,
+                    course_end_shift: 0,
+                    course_day: "",
+                    max_enroll: 0,
+                    current_enroll: 0,
+                    course_room: "",
+                });
+
                 setOpen(false);
                 setCourses((prev) => [
                     ...prev,
@@ -444,6 +504,42 @@ const AdminCoursesPage = () => {
                         course_size: `${data.data.current_enroll}/${data.data.max_enroll}`,
                     },
                 ]);
+            } else {
+                errorMessage({
+                    content: data.message || "An unexpected error occurred",
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            errorMessage({
+                content: "An unexpected error occurred",
+            });
+        }
+    };
+
+    const handleDeleteCourse = async (course_id: string) => {
+        try {
+            const result = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/course/delete/${course_id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data: IApiResponse<ICourseResponse> = await result.json();
+            if (result.ok) {
+                successMessage({
+                    content: `Courses deleted successfully`,
+                    duration: 1,
+                });
+
+                setCourses((prev) =>
+                    prev.filter((course) => course.key !== course_id)
+                );
             } else {
                 errorMessage({
                     content: data.message || "An unexpected error occurred",
@@ -492,6 +588,7 @@ const AdminCoursesPage = () => {
                         <Select
                             size={"middle"}
                             placeholder="Khoa"
+                            value={courseCreateForm.course_department}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -513,6 +610,7 @@ const AdminCoursesPage = () => {
                             placeholder="Số tín chỉ"
                             min={1}
                             max={10}
+                            value={courseCreateForm.course_credit}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -528,6 +626,7 @@ const AdminCoursesPage = () => {
                         <Select
                             size={"middle"}
                             placeholder="Giảng viên"
+                            value={courseCreateForm.course_teacher_id}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -555,6 +654,7 @@ const AdminCoursesPage = () => {
                         <Select
                             size={"middle"}
                             placeholder="Tiết bắt đầu"
+                            value={courseCreateForm.course_start_shift}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -570,6 +670,7 @@ const AdminCoursesPage = () => {
                         <Select
                             size={"middle"}
                             placeholder="Tiết kết thúc"
+                            value={courseCreateForm.course_end_shift}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -600,6 +701,7 @@ const AdminCoursesPage = () => {
                             placeholder="Sĩ số tối đa"
                             min={1}
                             max={1000}
+                            value={courseCreateForm.max_enroll}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -615,6 +717,7 @@ const AdminCoursesPage = () => {
                         <Select
                             size={"middle"}
                             placeholder="Học kỳ"
+                            value={courseCreateForm.course_semester}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -635,6 +738,7 @@ const AdminCoursesPage = () => {
                             placeholder="Năm học"
                             min={1}
                             max={new Date().getFullYear()}
+                            value={courseCreateForm.course_year}
                             onChange={(value) => {
                                 setCourseCreateForm((prev) => ({
                                     ...prev,
@@ -648,6 +752,7 @@ const AdminCoursesPage = () => {
                     <Select
                         size={"middle"}
                         placeholder="Ngày học"
+                        value={courseCreateForm.course_day}
                         onChange={(value) => {
                             setCourseCreateForm((prev) => ({
                                 ...prev,
@@ -673,16 +778,15 @@ const AdminCoursesPage = () => {
                 <AddModal
                     open={open}
                     setOpen={setOpen}
-                    onFinish={(e) => {
-                        e.preventDefault();
-                        onFinish(courseCreateForm);
-                    }}
+                    form={form}
+                    onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                     buttonIcon={<Plus size={16} />}
                     buttonContent="Thêm môn học"
                     formTitle="Thêm môn"
                     submitButtonContent="Thêm môn mới"
                     modalContent={modalContent}
+                    resetModalContentValues={resetCreateCourseForm}
                 />
             </div>
             <Table<ICourse> dataSource={courses} columns={columns} />

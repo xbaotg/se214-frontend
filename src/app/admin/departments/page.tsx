@@ -24,6 +24,7 @@ const AdminDepartmentPage = () => {
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [open, setOpen] = useState<boolean>(false);
+    const [form] = Form.useForm();
 
     useEffect(() => {
         if (!token) {
@@ -341,6 +342,7 @@ const AdminDepartmentPage = () => {
                 <span className="text-xl text-red-500 font-bold">Khoa</span>
                 <AddModal
                     open={open}
+                    form={form}
                     setOpen={setOpen}
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}

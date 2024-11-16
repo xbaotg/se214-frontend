@@ -1,15 +1,17 @@
 import Draggable from "react-draggable";
 import { useRef, useState } from "react";
-import { Form, Modal, Button, FormProps } from "antd";
+import { Form, Modal, Button, FormProps, FormInstance } from "antd";
 import type { DraggableData, DraggableEvent } from "react-draggable";
 
 const AddModal = ({
     open,
     setOpen,
+    form,
     buttonIcon,
     buttonContent,
     formTitle,
     modalContent,
+    resetModalContentValues,
     formItems,
     submitButtonContent,
     onFinish,
@@ -17,11 +19,13 @@ const AddModal = ({
 }: {
     open: boolean;
     setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+    form?: FormInstance;
     buttonIcon: React.ReactNode;
     buttonContent: string;
     formTitle: string;
     formItems?: React.JSX.Element | null;
-    modalContent?: React.ReactNode | null;
+    modalContent?: React.ReactNode;
+    resetModalContentValues?: () => void;
     submitButtonContent: string;
     onFinish: FormProps["onFinish"];
     onFinishFailed: FormProps["onFinishFailed"];
@@ -41,6 +45,12 @@ const AddModal = ({
 
     const handleCancel = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
+        if (form) {
+            form.resetFields();
+        }
+        if (resetModalContentValues) {
+            resetModalContentValues();
+        }
         setOpen(false);
     };
 
@@ -109,6 +119,7 @@ const AddModal = ({
                 {formItems && !modalContent ? (
                     <Form
                         name="basic"
+                        form={form}
                         labelCol={{ span: 6 }}
                         wrapperCol={{ span: 18 }}
                         initialValues={{
