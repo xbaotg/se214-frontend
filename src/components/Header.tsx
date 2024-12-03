@@ -96,7 +96,7 @@ const Header = ({
                     </nav>
                     <div className="flex items-center space-x-10">
                         <Button
-                            className="ml-auto border-2 text-red-500"
+                            className="ml-auto border-2 text-red-500 shadow-md"
                             onClick={handleLogout}
                         >
                             Đăng xuất

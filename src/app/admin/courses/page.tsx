@@ -30,14 +30,12 @@ import {
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, PenLine } from "lucide-react";
 import { dayOptions, lessionOptions, semesterOptions } from "@/constants";
+import EditModal from "@/components/admin/EditCourseModal";
+import { formatDate, generateString } from "@/utils";
 
 type DataIndex = keyof ICourse;
-
-const generateString = (a: number, b: number) => {
-    return Array.from({ length: b - a + 1 }, (_, i) => a + i).join(",");
-};
 
 const AdminCoursesPage = () => {
     const router = useRouter();
@@ -61,6 +59,10 @@ const AdminCoursesPage = () => {
             label: string;
         }[]
     >([]);
+
+    const updatedCourses = (courses: ICourse[]) => {
+        setCourses(courses);
+    };
 
     const [courseCreateForm, setCourseCreateForm] =
         useState<CreateCourseFormValues>({
@@ -157,6 +159,7 @@ const AdminCoursesPage = () => {
                 const fetch_courses = response_fetch_courses_data.data.map(
                     (course) => ({
                         key: course.id,
+                        course_code: course.course_code,
                         course_id: course.id,
                         course_name: course.course_name,
                         course_fullname: course.course_fullname,
@@ -167,6 +170,12 @@ const AdminCoursesPage = () => {
                             course.course_end_shift
                         ),
                         course_size: `${course.current_enroll}/${course.max_enroll}`,
+                        course_teacher_id: course.course_teacher_id,
+                        course_department: course.course_department,
+                        max_enroll: course.max_enroll,
+                        current_enroll: course.current_enroll,
+                        course_start_shift: course.course_start_shift,
+                        course_end_shift: course.course_end_shift,
                     })
                 );
 
@@ -368,8 +377,8 @@ const AdminCoursesPage = () => {
             key: "action",
             // @ts-expect-error - Temporary fix
             render: (_, record: ICourse) => (
-                <Space size="middle">
-                    <div className="flex">
+                <Space size="large">
+                    <div className="flex gap-4">
                         <div className="cursor-pointer">
                             <Popconfirm
                                 title="Sure to cancel?"
@@ -379,6 +388,19 @@ const AdminCoursesPage = () => {
                             >
                                 <Trash2 size={16} color="red" />
                             </Popconfirm>
+                        </div>
+                        <div className="cursor-pointer">
+                            <EditModal
+                                icon={<PenLine size={16} />}
+                                course={record}
+                                allCourses={courses}
+                                setCourses={updatedCourses}
+                                departmentOptions={departmentOptions}
+                                teacherOptions={teacherOptions}
+                                lessionOptions={lessionOptions}
+                                semesterOptions={semesterOptions}
+                                token={token as string}
+                            />
                         </div>
                     </div>
                 </Space>
@@ -493,6 +515,7 @@ const AdminCoursesPage = () => {
                     {
                         key: data.data.id,
                         course_id: data.data.id,
+                        course_teacher_id: data.data.course_teacher_id,
                         course_name: data.data.course_name,
                         course_fullname: data.data.course_fullname,
                         course_room: data.data.course_room,

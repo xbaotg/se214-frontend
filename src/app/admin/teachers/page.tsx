@@ -18,7 +18,8 @@ import {
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { Plus } from "lucide-react";
+import { PenLine, Plus } from "lucide-react";
+import EditTeacherModal from "@/components/admin/EditTeacherModal";
 
 type DataIndex = keyof ITeacher;
 
@@ -225,6 +226,23 @@ const AdminTeacherPage = () => {
             dataIndex: "year",
             key: "year",
         },
+        // {
+        //     title: "Thao tác",
+        //     key: "action",
+        //     render: (text: string, record: ITeacher) => (
+        //         <Space size="large">
+        //             <div className="cursor-pointer">
+        //                 <EditTeacherModal
+        //                     icon={<PenLine size={16} />}
+        //                     teacher={record}
+        //                     allTeachers={teachers}
+        //                     setTeachers={setTeachers}
+        //                     token={token as string}
+        //                 />
+        //             </div>
+        //         </Space>
+        //     ),
+        // },
     ];
 
     const successMessage = ({

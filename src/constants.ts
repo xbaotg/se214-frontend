@@ -23,6 +23,10 @@ export const userNavItems = [
         path: "/user/tkb",
     },
     {
+        name: "Quản lý môn học",
+        path: "/user/course",
+    },
+    {
         name: "Hồ sơ",
         path: "/user/profile",
     },
@@ -58,6 +62,15 @@ export const dayOptions = [
         label: "Chủ nhật",
     },
 ];
+
+export const daysMapping = {
+    monday: 2,
+    tuesday: 3,
+    wednesday: 4,
+    thursday: 5,
+    friday: 6,
+    saturday: 7,
+};
 
 export const semesterOptions = [
     {

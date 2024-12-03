@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, Suspense } from "react";
+import React, { useEffect, Suspense, useState } from "react";
 import { setCookie } from "cookies-next";
 import { Button, Form, Input, FormProps, message } from "antd";
 import { ValidateErrorEntity } from "rc-field-form/lib/interface";
 import { useSearchParams, useRouter } from "next/navigation";
 import { IApiResponse } from "@/types";
+import { LockOutlined, UserOutlined } from "@ant-design/icons";
 
 interface LoginFormValues {
     username: string;
@@ -50,6 +51,7 @@ const styles: Record<string, React.CSSProperties> = {
 
 const SignInContent: React.FC = () => {
     const router = useRouter();
+    const [loading, setLoading] = useState(false);
     const searchParams = useSearchParams();
     const [messageApi, contextHolder] = message.useMessage();
 
@@ -88,6 +90,7 @@ const SignInContent: React.FC = () => {
 
     const onFinish: FormProps["onFinish"] = async (values: LoginFormValues) => {
         const { username, password } = values;
+        setLoading(true);
 
         try {
             const response = await fetch(
@@ -152,6 +155,8 @@ const SignInContent: React.FC = () => {
                 content: "An unexpected error occurred. Please try again.",
                 duration: 1,
             });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -170,18 +175,21 @@ const SignInContent: React.FC = () => {
         <div style={styles.container}>
             {contextHolder}
             <div style={styles.formWrapper}>
-                <h1 style={styles.header}>Đăng nhập tài khoản</h1>
+                <h1 style={styles.header}>Đăng nhập</h1>
                 <Form
                     name="basic"
-                    labelCol={{ span: 6 }}
-                    wrapperCol={{ span: 18 }}
+                    style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        width: "100%",
+                    }}
                     initialValues={{ remember: true }}
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                     autoComplete="off"
                 >
                     <Form.Item
-                        label="Tên đăng nhập"
                         name="username"
                         rules={[
                             {
@@ -189,12 +197,18 @@ const SignInContent: React.FC = () => {
                                 message: "Please input your username!",
                             },
                         ]}
+                        style={{
+                            width: "80%",
+                        }}
                     >
-                        <Input autoFocus />
+                        <Input
+                            autoFocus
+                            prefix={<UserOutlined />}
+                            placeholder="Tên đăng nhập"
+                        />
                     </Form.Item>
 
                     <Form.Item
-                        label="Mật khẩu"
                         name="password"
                         rules={[
                             {
@@ -202,24 +216,41 @@ const SignInContent: React.FC = () => {
                                 message: "Please input your password!",
                             },
                         ]}
+                        style={{
+                            width: "80%",
+                        }}
                     >
-                        <Input.Password />
+                        <Input.Password
+                            prefix={<LockOutlined />}
+                            type="password"
+                            placeholder="Mật khẩu"
+                        />
                     </Form.Item>
 
                     <div
                         style={{
+                            width: "100%",
                             display: "flex",
                             justifyContent: "space-evenly",
                         }}
                     >
-                        <Form.Item wrapperCol={{ offset: 6, span: 18 }}>
-                            <Button type="primary" htmlType="submit">
+                        <Form.Item
+                            wrapperCol={{ offset: 6, span: 18 }}
+                            style={{
+                                marginTop: "1rem",
+                            }}
+                        >
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                loading={loading}
+                            >
                                 Đăng nhập
                             </Button>
                         </Form.Item>
 
                         <div style={styles.footer}>
-                            {"Chưa có tài khoản? "}
+                            Chưa có tài khoản?
                             <a
                                 href="/register"
                                 className="text-blue-500 block ml-4"

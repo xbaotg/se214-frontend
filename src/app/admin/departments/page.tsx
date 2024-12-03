@@ -11,7 +11,10 @@ import { CreateDepartmentFormValues, IApiResponse, IDepartment } from "@/types";
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { Plus } from "lucide-react";
+import { PenLine, Plus } from "lucide-react";
+import EditModal from "@/components/admin/EditCourseModal";
+import EditDepartmentModal from "@/components/admin/EditDepartmentModal";
+import { formatDate } from "@/utils";
 
 type DataIndex = keyof IDepartment;
 
@@ -52,8 +55,8 @@ const AdminDepartmentPage = () => {
                         department_id: department.department_id,
                         department_name: department.department_name,
                         department_code: department.department_code,
-                        created_at: department.created_at,
-                        updated_at: department.updated_at,
+                        created_at: formatDate(department.created_at),
+                        updated_at: formatDate(department.updated_at),
                     }));
 
                     setDepartments(fetch_departments);
@@ -67,6 +70,10 @@ const AdminDepartmentPage = () => {
         };
         fetchDepartments();
     }, []);
+
+    const updatedDepartments = (new_departments: IDepartment[]) => {
+        setDepartments(new_departments);
+    };
 
     const handleSearch = (
         selectedKeys: string[],
@@ -218,6 +225,23 @@ const AdminDepartmentPage = () => {
             title: "Ngày cập nhật",
             dataIndex: "updated_at",
             key: "updated_at",
+        },
+        {
+            title: "Thao tác",
+            key: "action",
+            render: (text: string, record: IDepartment) => (
+                <Space size="large">
+                    <div className="cursor-pointer">
+                        <EditDepartmentModal
+                            icon={<PenLine size={16} />}
+                            department={record}
+                            setDepartments={updatedDepartments}
+                            allDepartments={departments}
+                            token={token as string}
+                        />
+                    </div>
+                </Space>
+            ),
         },
     ];
 

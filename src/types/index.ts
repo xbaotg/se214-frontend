@@ -1,3 +1,11 @@
+type CourseDay =
+    | "monday"
+    | "tuesday"
+    | "wednesday"
+    | "thursday"
+    | "friday"
+    | "saturday";
+
 export interface IApiResponse<T> {
     data: T;
     message: string;
@@ -36,14 +44,20 @@ export interface IDepartment {
 export interface ICourse {
     key?: string;
     course_id: string;
+    course_code?: string;
+    course_teacher_id: string | null;
     course_name: string;
-    course_department?: string;
-    course_year?: number;
-    course_semester?: number;
-    course_credit?: number;
+    course_department?: string | null;
+    course_year?: number | null | string;
+    course_semester?: number | null | string;
+    course_credit?: number | null | string;
     course_fullname: string;
     course_room: string;
-    course_day: string;
+    course_start_shift?: number | null | string;
+    course_end_shift?: number | null | string;
+    course_day: CourseDay | null | string;
+    max_enroll?: number | null | string;
+    current_enroll?: number | null;
     course_time: string;
     course_size: string;
 }
@@ -59,6 +73,7 @@ export interface ICourseResponse {
     id: string;
     course_code: string;
     course_teacher_id: string;
+    course_teacher_name?: string | undefined;
     course_department: string;
     course_name: string;
     course_fullname: string;
@@ -67,7 +82,7 @@ export interface ICourseResponse {
     course_semester: number;
     course_start_shift: number;
     course_end_shift: number;
-    course_day: string;
+    course_day: CourseDay;
     max_enroll: number;
     current_enroll: number;
     course_room: string;
@@ -87,6 +102,12 @@ export interface CreateDepartmentFormValues {
     department_code: string;
 }
 
+export interface EditDepartmentFormValues {
+    department_name: string;
+    department_code: string;
+    department_id: string;
+}
+
 export interface CreateCourseFormValues {
     course_code: string;
     course_id: string;
@@ -99,7 +120,7 @@ export interface CreateCourseFormValues {
     course_semester: number | null | string;
     course_start_shift: number | null | string;
     course_end_shift: number | null | string;
-    course_day: string | null;
+    course_day: CourseDay | null | string;
     max_enroll: number | null | string;
     current_enroll: number;
     course_room: string;
@@ -118,3 +139,17 @@ export interface SignUpResponse {
     username: string;
     detail?: string;
 }
+
+export type ICourseCard = {
+    id: string;
+    course_name: string;
+    course_fullname: string;
+    course_teacher: string;
+    course_room: string;
+    startPeriod: number;
+    endPeriod: number;
+};
+
+export type ITimeTableData = {
+    [day: number]: ICourseCard[];
+};
