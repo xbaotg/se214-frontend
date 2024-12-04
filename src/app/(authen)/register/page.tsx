@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { SignUpFormValues, SignUpResponse, UserRoles } from "@/types";
+import { ISignUpFormValues, ISignUpResponse, UserRoles } from "@/types";
 import { Button, Form, Input, FormProps, message, InputNumber } from "antd";
 
 const SignUp: React.FC = () => {
@@ -38,7 +38,7 @@ const SignUp: React.FC = () => {
     };
 
     const onFinish: FormProps["onFinish"] = async (
-        values: SignUpFormValues
+        values: ISignUpFormValues
     ) => {
         const {
             username,
@@ -75,7 +75,7 @@ const SignUp: React.FC = () => {
                 }
             );
 
-            const data: SignUpResponse = await result.json();
+            const data: ISignUpResponse = await result.json();
             if (result.ok) {
                 successMessage({
                     content: `Account created successfully for ${data.username}`,

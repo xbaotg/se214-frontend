@@ -46,7 +46,7 @@ export const TimeColumn = ({ day, courses }: TimeColumnProps) => {
                 return (
                     <div
                         key={course.id}
-                        className={`${heightClass} relative`}
+                        className={`${heightClass} relative border-b border-gray-200`}
                         style={{
                             gridRow: `span ${
                                 course.endPeriod - course.startPeriod + 1

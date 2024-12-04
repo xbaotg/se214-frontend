@@ -1,20 +1,19 @@
 "use client";
 
-import { getCookie } from "cookies-next";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { IListUserResponse } from "@/types";
+import { message } from "antd";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import Loading from "@/components/Loading";
+import { useAuth } from "@/hooks/auth";
 
 const ProfilePage = () => {
-    const router = useRouter();
-    const refresh_token = getCookie("refresh_token");
+    const { refreshToken: refresh_token } = useAuth();
+    const [messageApi, contextHolder] = message.useMessage();
+    const [loadingPage, setLoadingPage] = useState(true);
     const [user, setUser] = useState<IListUserResponse>();
     useEffect(() => {
-        if (!refresh_token) {
-            router.push("/login");
-        }
         try {
             if (refresh_token) {
                 const fetchProfile = async () => {
@@ -28,17 +27,28 @@ const ProfilePage = () => {
                         }
                     );
                     const data = await res.json();
+                    messageApi.success({
+                        content: "Lấy thông tin tài khoản thành công",
+                        duration: 1,
+                    });
                     setUser(data.data);
                 };
                 fetchProfile();
             }
         } catch (error) {
             console.log(error);
+        } finally {
+            setLoadingPage(false);
         }
     }, [refresh_token]);
 
+    if (loadingPage) {
+        return <Loading />;
+    }
+
     return (
         <div className="flex items-center justify-center p-5">
+            {contextHolder}
             <div className="container p-5 items-center justify-center border border-gray-200 rounded-md w-1/3 shadow-lg shadow-slate-500">
                 {/* <h1 className="text-center text-xl font-bold">Profile</h1> */}
                 <h3 className="text-center text-xl font-bold p-3">
@@ -72,4 +82,4 @@ const ProfilePage = () => {
     );
 };
 
-export default ProfilePage;
+export default ProtectedRoute(ProfilePage);

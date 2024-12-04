@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from "react";
 import { TimeTable } from "@/components/TimeTable/TimeTable";
-import { getCookie } from "cookies-next";
 import { message } from "antd";
 import { ICourseResponse, ITimeTableData } from "@/types";
 import { daysMapping } from "@/constants";
+import Loading from "@/components/Loading";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/hooks/auth";
 
 const TKBPage = () => {
-    const token = getCookie("refresh_token");
+    // const token = getCookie("refresh_token");
+    const { refreshToken: token } = useAuth();
+    const [loading, setLoading] = useState(true);
     const [messageApi, contextHolder] = message.useMessage();
     const [courses, setCourses] = useState<ITimeTableData>({});
 
@@ -30,8 +34,6 @@ const TKBPage = () => {
                 }
                 const data: ICourseResponse[] = (await response.json()).data;
 
-                console.log(data);
-
                 const coursesData: ITimeTableData = {};
                 data.forEach((course) => {
                     const day = daysMapping[course.course_day];
@@ -48,14 +50,24 @@ const TKBPage = () => {
                         endPeriod: course.course_end_shift,
                     });
                 });
+                messageApi.success({
+                    content: "Lấy thông tin thành công.",
+                    duration: 1,
+                });
                 setCourses(coursesData);
             } catch (error) {
                 console.error(error);
-                messageApi.error("Failed to fetch courses");
+                messageApi.error("Lấy thông tin thất bại.");
+            } finally {
+                setLoading(false);
             }
         };
         fetchCourses();
     }, []);
+
+    if (loading) {
+        return <Loading />;
+    }
 
     return (
         <div className="flex justify-center w-full mx-auto">
@@ -67,4 +79,4 @@ const TKBPage = () => {
     );
 };
 
-export default TKBPage;
+export default ProtectedRoute(TKBPage);

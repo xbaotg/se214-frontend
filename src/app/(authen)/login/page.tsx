@@ -1,22 +1,15 @@
 "use client";
 
 import React, { useEffect, Suspense, useState } from "react";
-import { setCookie } from "cookies-next";
 import { Button, Form, Input, FormProps, message } from "antd";
 import { ValidateErrorEntity } from "rc-field-form/lib/interface";
-import { useSearchParams, useRouter } from "next/navigation";
-import { IApiResponse } from "@/types";
+import { useSearchParams } from "next/navigation";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
+import { useAuth } from "@/hooks/auth";
 
 interface LoginFormValues {
     username: string;
     password: string;
-}
-
-interface ILoginResponse {
-    access_token: string;
-    refresh_token: string;
-    user_role: string;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -50,8 +43,8 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 const SignInContent: React.FC = () => {
-    const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const { login } = useAuth();
     const searchParams = useSearchParams();
     const [messageApi, contextHolder] = message.useMessage();
 
@@ -89,70 +82,18 @@ const SignInContent: React.FC = () => {
     };
 
     const onFinish: FormProps["onFinish"] = async (values: LoginFormValues) => {
-        const { username, password } = values;
         setLoading(true);
 
         try {
-            const response = await fetch(
-                `${process.env.NEXT_PUBLIC_API_URL}/login`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ username, password }),
-                }
-            );
-
-            if (response.ok) {
-                const data: IApiResponse<ILoginResponse> =
-                    await response.json();
-
-                setCookie("access_token", data.data.access_token, {
-                    maxAge: 30 * 60,
-                    path: "/",
-                });
-
-                setCookie("refresh_token", data.data.refresh_token, {
-                    maxAge: 30 * 60,
-                    path: "/",
-                });
-
-                setCookie("user_role", data.data.user_role, {
-                    maxAge: 30 * 60,
-                    path: "/",
-                });
-
-                successMessage({
-                    content: "Login successful.",
-                    duration: 1,
-                });
-                const path = localStorage.getItem("redirectPath") || "/";
-
-                if (path === "/") {
-                    if (data.data.user_role === "admin") {
-                        router.push("/admin");
-                        // } else if (data.data.user_role === "lecturer") {
-                        //     router.push("/lecturer");
-                    } else {
-                        router.push("/user");
-                    }
-                }
-
-                // setTimeout(() => router.push(path), 1000);
-            } else if (response.status === 401) {
-                errorMessage({
-                    content: "Invalid username or password.",
-                });
-            } else {
-                errorMessage({
-                    content: "An unexpected error occurred. Please try again.",
-                });
-            }
+            await login(values);
+            successMessage({
+                content: "Đăng nhập thành công!",
+                duration: 5,
+            });
         } catch (error) {
             console.error("Login error:", error);
             errorMessage({
-                content: "An unexpected error occurred. Please try again.",
+                content: "Đăng nhập thất bại, vui lòng thử lại!",
                 duration: 1,
             });
         } finally {
@@ -194,7 +135,7 @@ const SignInContent: React.FC = () => {
                         rules={[
                             {
                                 required: true,
-                                message: "Please input your username!",
+                                message: "Nhập tên đăng nhập!",
                             },
                         ]}
                         style={{
@@ -213,7 +154,7 @@ const SignInContent: React.FC = () => {
                         rules={[
                             {
                                 required: true,
-                                message: "Please input your password!",
+                                message: "Nhập mật khẩu!",
                             },
                         ]}
                         style={{

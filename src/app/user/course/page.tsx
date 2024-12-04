@@ -14,12 +14,10 @@ import { IApiResponse, ICourse, ICourseResponse, IDepartment } from "@/types";
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import React from "react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { generatePeriodString } from "@/utils";
 
 type DataIndex = keyof ICourse;
-
-const generateString = (a: number, b: number) => {
-    return Array.from({ length: b - a + 1 }, (_, i) => a + i).join(",");
-};
 
 interface IDepartmentFilter {
     department_id: string;
@@ -89,6 +87,10 @@ const DKHPPage = () => {
                 }
             });
 
+            messageApi.success(
+                `Hủy đăng ký thành công ${unSubRegisteredCourses.length} học phần`
+            );
+
             const filteredCourses = courses.filter(
                 (course) => !unSubRegisteredCourses.includes(course)
             );
@@ -97,7 +99,7 @@ const DKHPPage = () => {
             setCourses(filteredCourses);
         } catch (error) {
             console.error("Failed to register courses: ", error);
-            messageApi.error("Failed to register courses");
+            messageApi.error("Đăng ký thất bại");
         } finally {
             setLoading(false);
         }
@@ -179,7 +181,7 @@ const DKHPPage = () => {
                         course_fullname: course.course_fullname,
                         course_room: course.course_room,
                         course_day: course.course_day,
-                        course_time: generateString(
+                        course_time: generatePeriodString(
                             course.course_start_shift,
                             course.course_end_shift
                         ),
@@ -190,6 +192,11 @@ const DKHPPage = () => {
                         course_credit: course.course_credit,
                     })
                 );
+
+                messageApi.success({
+                    content: "Lấy thông tin các môn đã đăng ký thành công",
+                    duration: 1,
+                });
 
                 setDepartments(fetch_departments);
                 setCourses(fetch_courses);
@@ -456,4 +463,4 @@ const DKHPPage = () => {
     );
 };
 
-export default DKHPPage;
+export default ProtectedRoute(DKHPPage);

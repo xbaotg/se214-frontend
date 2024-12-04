@@ -1,10 +1,10 @@
 import { dayOptions } from "@/constants";
 import { CreateCourseFormValues, ICourse } from "@/types";
-import { generateString } from "@/utils";
+import { generatePeriodString } from "@/utils";
 import { Modal, message, Select, Input, InputNumber, Divider } from "antd";
 import { useState } from "react";
 
-const EditModal = ({
+const EditCourseModal = ({
     icon,
     course,
     allCourses,
@@ -89,7 +89,7 @@ const EditModal = ({
                         c.course_id === course.course_id
                             ? {
                                   ...courseUpdateForm,
-                                  course_time: generateString(
+                                  course_time: generatePeriodString(
                                       courseUpdateForm.course_start_shift as number,
                                       courseUpdateForm.course_end_shift as number
                                   ),
@@ -338,4 +338,4 @@ const EditModal = ({
     );
 };
 
-export default EditModal;
+export default EditCourseModal;

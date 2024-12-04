@@ -5,27 +5,27 @@ import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
 import { message, Table, Button, Input, Space, Form, InputNumber } from "antd";
 import type { InputRef, TableColumnType, FormProps } from "antd";
-import { getCookie } from "cookies-next";
 
 import {
     IApiResponse,
     IListUserResponse,
     ITeacher,
-    SignUpFormValues,
-    SignUpResponse,
+    ISignUpResponse,
     UserRoles,
+    ISignUpFormValues,
 } from "@/types";
-import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { PenLine, Plus } from "lucide-react";
-import EditTeacherModal from "@/components/admin/EditTeacherModal";
+import { Plus } from "lucide-react";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/hooks/auth";
+import Loading from "@/components/Loading";
 
 type DataIndex = keyof ITeacher;
 
 const AdminTeacherPage = () => {
-    const router = useRouter();
-    const token = getCookie("refresh_token");
+    const { refreshToken: token } = useAuth();
+    const [loadingPage, setLoadingPage] = useState(true);
     const [teachers, setTeachers] = useState<ITeacher[]>([]);
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
@@ -35,10 +35,6 @@ const AdminTeacherPage = () => {
     const [form] = Form.useForm();
 
     useEffect(() => {
-        if (!token) {
-            router.push("/login");
-            return;
-        }
         const fetchTeachers = async () => {
             try {
                 const response = await fetch(
@@ -62,13 +58,19 @@ const AdminTeacherPage = () => {
                         user_fullname: teacher.user_fullname,
                         year: teacher.year,
                     }));
+                    messageApi.success({
+                        content: "Lấy danh sách giảng viên thành công",
+                        duration: 1,
+                    });
                     setTeachers(fetch_teachers);
                 } else {
-                    message.error("Failed to fetch teachers");
+                    message.error("Lấy danh sách giảng viên không thành công");
                 }
             } catch (error) {
                 console.error("Failed to fetch teachers: ", error);
-                message.error("Failed to fetch teachers");
+                message.error("Lấy danh sách giảng viên không thành công");
+            } finally {
+                setLoadingPage(false);
             }
         };
         fetchTeachers();
@@ -278,7 +280,7 @@ const AdminTeacherPage = () => {
     };
 
     const onFinish: FormProps["onFinish"] = async (
-        values: SignUpFormValues
+        values: ISignUpFormValues
     ) => {
         const {
             username,
@@ -316,10 +318,10 @@ const AdminTeacherPage = () => {
                 }
             );
 
-            const data: IApiResponse<SignUpResponse> = await result.json();
+            const data: IApiResponse<ISignUpResponse> = await result.json();
             if (result.ok) {
                 successMessage({
-                    content: `Account created successfully for ${data.data.username}`,
+                    content: `Đăng ký giảng viên ${data.data.username} thành công!`,
                     duration: 1,
                 });
 
@@ -454,6 +456,10 @@ const AdminTeacherPage = () => {
         </>
     );
 
+    if (loadingPage) {
+        return <Loading />;
+    }
+
     return (
         <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
             {contextHolder}
@@ -479,4 +485,4 @@ const AdminTeacherPage = () => {
     );
 };
 
-export default AdminTeacherPage;
+export default ProtectedRoute(AdminTeacherPage);

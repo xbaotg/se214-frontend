@@ -16,7 +16,6 @@ import {
     Popconfirm,
 } from "antd";
 import type { InputRef, FormProps, TableColumnType } from "antd";
-import { getCookie } from "cookies-next";
 
 import {
     CreateCourseFormValues,
@@ -27,20 +26,22 @@ import {
     IDepartment,
     UserRoles,
 } from "@/types";
-import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
 import { Plus, Trash2, PenLine } from "lucide-react";
 import { dayOptions, lessionOptions, semesterOptions } from "@/constants";
-import EditModal from "@/components/admin/EditCourseModal";
-import { formatDate, generateString } from "@/utils";
+import { generatePeriodString } from "@/utils";
+import EditCourseModal from "@/components/admin/EditCourseModal";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/hooks/auth";
+import Loading from "@/components/Loading";
 
 type DataIndex = keyof ICourse;
 
 const AdminCoursesPage = () => {
-    const router = useRouter();
+    const { refreshToken: token } = useAuth();
     const [form] = Form.useForm();
-    const token = getCookie("refresh_token");
+    const [loadingPage, setLoadingPage] = useState(true);
     const [courses, setCourses] = useState<ICourse[]>([]);
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
@@ -53,6 +54,7 @@ const AdminCoursesPage = () => {
             label: string;
         }[]
     >([]);
+
     const [departmentOptions, setDepartmentOptions] = useState<
         {
             value: string;
@@ -104,10 +106,6 @@ const AdminCoursesPage = () => {
     };
 
     useEffect(() => {
-        if (!token) {
-            router.push("/login");
-            return;
-        }
         const fetchData = async () => {
             try {
                 const [
@@ -165,7 +163,7 @@ const AdminCoursesPage = () => {
                         course_fullname: course.course_fullname,
                         course_room: course.course_room,
                         course_day: course.course_day,
-                        course_time: generateString(
+                        course_time: generatePeriodString(
                             course.course_start_shift,
                             course.course_end_shift
                         ),
@@ -199,16 +197,22 @@ const AdminCoursesPage = () => {
                         label: department.department_name,
                     }));
 
+                messageApi.success({
+                    content: "Lấy thông tin thành công.",
+                    duration: 1,
+                });
                 setTeacherOptions(fetch_teachers);
                 setDepartmentOptions(fetch_departments);
                 setCourses(fetch_courses);
             } catch (error) {
                 console.error("Failed to fetch courses: ", error);
                 message.error("Failed to fetch courses");
+            } finally {
+                setLoadingPage(false);
             }
         };
         fetchData();
-    }, []);
+    }, [token]);
 
     const handleSearch = (
         selectedKeys: string[],
@@ -381,7 +385,7 @@ const AdminCoursesPage = () => {
                     <div className="flex gap-4">
                         <div className="cursor-pointer">
                             <Popconfirm
-                                title="Sure to cancel?"
+                                title="Xác nhận xóa ?"
                                 onConfirm={() => {
                                     handleDeleteCourse(record.course_id);
                                 }}
@@ -390,7 +394,7 @@ const AdminCoursesPage = () => {
                             </Popconfirm>
                         </div>
                         <div className="cursor-pointer">
-                            <EditModal
+                            <EditCourseModal
                                 icon={<PenLine size={16} />}
                                 course={record}
                                 allCourses={courses}
@@ -520,7 +524,7 @@ const AdminCoursesPage = () => {
                         course_fullname: data.data.course_fullname,
                         course_room: data.data.course_room,
                         course_day: data.data.course_day,
-                        course_time: generateString(
+                        course_time: generatePeriodString(
                             data.data.course_start_shift,
                             data.data.course_end_shift
                         ),
@@ -553,10 +557,16 @@ const AdminCoursesPage = () => {
                 }
             );
 
+            const course = courses.find(
+                (course) => course.course_id === course_id
+            );
+
             const data: IApiResponse<ICourseResponse> = await result.json();
             if (result.ok) {
                 successMessage({
-                    content: `Courses deleted successfully`,
+                    content: `Xóa học phần ${
+                        course?.course_code || ""
+                    } thành công.`,
                     duration: 1,
                 });
 
@@ -793,6 +803,10 @@ const AdminCoursesPage = () => {
         </>
     );
 
+    if (loadingPage) {
+        return <Loading />;
+    }
+
     return (
         <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
             {contextHolder}
@@ -817,4 +831,4 @@ const AdminCoursesPage = () => {
     );
 };
 
-export default AdminCoursesPage;
+export default ProtectedRoute(AdminCoursesPage);

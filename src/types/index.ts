@@ -88,13 +88,55 @@ export interface ICourseResponse {
     course_room: string;
 }
 
-export interface SignUpFormValues {
+export interface IUserResponse {
+    id: string;
+    email: string;
+    username: string;
+    user_fullname: string;
+    year: number;
+    user_role: UserRoles;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface IUser {
+    id: string;
+    username: string;
+    email: string;
+    userFullname: string;
+    year: number;
+    userRole: UserRoles;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface ILoginFormValues {
+    username: string;
+    password: string;
+}
+
+export interface ILoginResponse {
+    session_id: string;
+    user_role: UserRoles;
+    access_token: string;
+    access_token_expires_in: Date;
+    refresh_token: string;
+    refresh_token_expires_in: Date;
+}
+
+export interface ISignUpFormValues {
     username: string;
     email: string;
     password: string;
     retypePassword: string;
     user_fullname: string;
     year: number;
+}
+
+export interface ISignUpResponse {
+    id: string;
+    username: string;
+    detail?: string;
 }
 
 export interface CreateDepartmentFormValues {
@@ -132,12 +174,6 @@ export interface IListUserResponse {
     username: string;
     user_fullname: string;
     year: number;
-}
-
-export interface SignUpResponse {
-    id: string;
-    username: string;
-    detail?: string;
 }
 
 export type ICourseCard = {

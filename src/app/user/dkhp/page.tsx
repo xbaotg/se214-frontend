@@ -14,10 +14,12 @@ import { IApiResponse, ICourse, ICourseResponse, IDepartment } from "@/types";
 import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import React from "react";
+import Loading from "@/components/Loading";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 type DataIndex = keyof ICourse;
 
-const generateString = (a: number, b: number) => {
+const generatePeriodString = (a: number, b: number) => {
     return Array.from({ length: b - a + 1 }, (_, i) => a + i).join(",");
 };
 
@@ -39,7 +41,7 @@ const DKHPPage = () => {
         React.Key[]
     >([]);
     const [departments, setDepartments] = useState<IDepartmentFilter[]>([]);
-
+    const [loadingPage, setLoadingPage] = useState(true);
     const [loading, setLoading] = useState(false);
 
     const start = async () => {
@@ -139,11 +141,11 @@ const DKHPPage = () => {
             });
 
             const successfulIndexes = results.map((result, index) => {
-                return result ? index : -1
+                return result ? index : -1;
             });
-            
+
             const unSuccessfulIndexes = results.map((result, index) => {
-                return result ? -1 : index
+                return result ? -1 : index;
             });
 
             const unSuccessfulCourses = unSuccessfulIndexes.map(
@@ -173,7 +175,6 @@ const DKHPPage = () => {
                 }
             });
 
-
             const registeredCourses = successfulIndexes.map(
                 (index) => selectedCourses[index]
             );
@@ -182,7 +183,10 @@ const DKHPPage = () => {
                 const index = courses.findIndex(
                     (c) => c.course_id === course?.course_id
                 );
-                if (index !== -1 && !alreadyRegisteredCourses.includes(courses[index].course_id)) {
+                if (
+                    index !== -1 &&
+                    !alreadyRegisteredCourses.includes(courses[index].course_id)
+                ) {
                     courses[index].course_size = `${
                         parseInt(course?.course_size.split("/")[0] || "0") + 1
                     }/${parseInt(course?.course_size.split("/")[1] || "0")}`;
@@ -196,17 +200,23 @@ const DKHPPage = () => {
                 (result) => result
             ).length;
 
-
             messageApi.success(
-                `Successfully registered ${successfulRequests} courses`
+                `Đăng ký thành công ${successfulRequests} học phần.`
             );
 
             setCourses([...courses]);
-            setAlreadyRegisteredCourses(selectedRowKeys.filter((key) => !unSuccessfulCourses.includes(getCourseByKey(key as string))));
+            setAlreadyRegisteredCourses(
+                selectedRowKeys.filter(
+                    (key) =>
+                        !unSuccessfulCourses.includes(
+                            getCourseByKey(key as string)
+                        )
+                )
+            );
             // setSelectedRowKeys([...selectedRowKeys]);
         } catch (error) {
             console.error("Failed to register courses: ", error);
-            messageApi.error("Failed to register courses");
+            messageApi.error("Đăng ký thất bại !!!");
         } finally {
             setLoading(false);
         }
@@ -310,10 +320,11 @@ const DKHPPage = () => {
                         key: course.id,
                         course_id: course.id,
                         course_name: course.course_name,
+                        course_teacher_id: course.course_teacher_id,
                         course_fullname: course.course_fullname,
                         course_room: course.course_room,
                         course_day: course.course_day,
-                        course_time: generateString(
+                        course_time: generatePeriodString(
                             course.course_start_shift,
                             course.course_end_shift
                         ),
@@ -325,11 +336,17 @@ const DKHPPage = () => {
                     })
                 );
 
+                messageApi.success({
+                    content: "Lấy thông tin học phần thành công",
+                    duration: 1,
+                });
                 setDepartments(fetch_departments);
                 setCourses(fetch_courses);
             } catch (error) {
                 console.error("Failed to fetch courses: ", error);
-                message.error("Failed to fetch courses");
+                messageApi.error("Lấy thông tin học phần thất bại");
+            } finally {
+                setLoadingPage(false);
             }
         };
         fetchData();
@@ -530,6 +547,10 @@ const DKHPPage = () => {
         },
     ];
 
+    if (loadingPage) {
+        return <Loading />;
+    }
+
     return (
         <div className="w-[90%] border shadow-sm rounded-lg mx-auto px-4">
             {contextHolder}
@@ -563,7 +584,7 @@ const DKHPPage = () => {
                                     <div>
                                         <strong>Khoa: &nbsp;</strong>
                                         {getDepartmentName(
-                                            record.course_department
+                                            record.course_department as string
                                         )}
                                     </div>
                                     <div>
@@ -588,4 +609,4 @@ const DKHPPage = () => {
     );
 };
 
-export default DKHPPage;
+export default ProtectedRoute(DKHPPage);

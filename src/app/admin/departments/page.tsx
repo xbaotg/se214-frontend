@@ -5,22 +5,22 @@ import { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
 import { message, Table, Button, Input, Space, Form } from "antd";
 import type { InputRef, TableColumnType, FormProps } from "antd";
-import { getCookie } from "cookies-next";
 
 import { CreateDepartmentFormValues, IApiResponse, IDepartment } from "@/types";
-import { useRouter } from "next/navigation";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
 import { PenLine, Plus } from "lucide-react";
-import EditModal from "@/components/admin/EditCourseModal";
 import EditDepartmentModal from "@/components/admin/EditDepartmentModal";
 import { formatDate } from "@/utils";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useAuth } from "@/hooks/auth";
+import Loading from "@/components/Loading";
 
 type DataIndex = keyof IDepartment;
 
 const AdminDepartmentPage = () => {
-    const router = useRouter();
-    const token = getCookie("refresh_token");
+    const { refreshToken: token } = useAuth();
+    const [loadingPage, setLoadingPage] = useState(true);
     const [departments, setDepartments] = useState<IDepartment[]>([]);
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
@@ -30,10 +30,6 @@ const AdminDepartmentPage = () => {
     const [form] = Form.useForm();
 
     useEffect(() => {
-        if (!token) {
-            router.push("/login");
-            return;
-        }
         const fetchDepartments = async () => {
             try {
                 const response = await fetch(
@@ -58,14 +54,20 @@ const AdminDepartmentPage = () => {
                         created_at: formatDate(department.created_at),
                         updated_at: formatDate(department.updated_at),
                     }));
+                    messageApi.success({
+                        content: "Lấy thông tin khoa thành công.",
+                        duration: 1,
+                    });
 
                     setDepartments(fetch_departments);
                 } else {
-                    message.error("Failed to fetch departments");
+                    message.error("Lấy thông tin khoa thất bại.");
                 }
             } catch (error) {
                 console.error("Failed to fetch departments: ", error);
-                message.error("Failed to fetch departments");
+                message.error("Lấy thông tin khoa thất bại.");
+            } finally {
+                setLoadingPage(false);
             }
         };
         fetchDepartments();
@@ -359,6 +361,10 @@ const AdminDepartmentPage = () => {
         </>
     );
 
+    if (loadingPage) {
+        return <Loading />;
+    }
+
     return (
         <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
             {contextHolder}
@@ -382,4 +388,4 @@ const AdminDepartmentPage = () => {
     );
 };
 
-export default AdminDepartmentPage;
+export default ProtectedRoute(AdminDepartmentPage);

@@ -15,23 +15,6 @@ const timeSlots = [
     { period: 10, time: "16:15 - 17:00" },
 ];
 
-// Mock data cho các khóa học
-const coursesData = {
-    4: [
-        // Thứ 4
-        {
-            id: "1",
-            course_name: "AI002.P11-VN",
-            course_fullname: "Tự duy Trí tuệ nhân tạo",
-            course_teacher: "Ngô Đức Thành",
-            course_room: "C312",
-            startPeriod: 1,
-            endPeriod: 3,
-        },
-    ],
-    // Thêm data cho các ngày khác
-};
-
 interface TimeTableProps {
     courses: ITimeTableData;
 }
