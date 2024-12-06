@@ -3,35 +3,13 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import {
-    Divider,
-    message,
-    Table,
-    Button,
-    Form,
-    Input,
-    Space,
-    InputNumber,
-    Select,
-    Popconfirm,
-} from "antd";
-import type { InputRef, FormProps, TableColumnType } from "antd";
+import { message, Table, Button, Input, Space } from "antd";
+import type { InputRef, TableColumnType } from "antd";
 
-import {
-    CreateCourseFormValues,
-    IApiResponse,
-    ICourse,
-    ICourseResponse,
-    ITeacher,
-    IDepartment,
-    UserRoles,
-} from "@/types";
+import { IApiResponse, ICourse, ICourseResponse } from "@/types";
 import Highlighter from "react-highlight-words";
-import AddModal from "@/components/admin/AddModal";
-import { Plus, Trash2, PenLine, User } from "lucide-react";
-import { dayOptions, lessionOptions, semesterOptions } from "@/constants";
+import { User } from "lucide-react";
 import { generatePeriodString } from "@/utils";
-import EditCourseModal from "@/components/admin/EditCourseModal";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
@@ -41,63 +19,28 @@ type DataIndex = keyof ICourse;
 
 const LecturerCoursesPage = () => {
     const { refreshToken: token } = useAuth();
-    const [form] = Form.useForm();
     const [loadingPage, setLoadingPage] = useState(true);
     const [courses, setCourses] = useState<ICourse[]>([]);
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
-    const [open, setOpen] = useState<boolean>(false);
-    const [teacherOptions, setTeacherOptions] = useState<
-        {
-            value: string;
-            label: string;
-        }[]
-    >([]);
-
-    const [departmentOptions, setDepartmentOptions] = useState<
-        {
-            value: string;
-            label: string;
-        }[]
-    >([]);
-
-    const updatedCourses = (courses: ICourse[]) => {
-        setCourses(courses);
-    };
-
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [
-                    response_fetch_courses,
-                    response_fetch_dapartments,
-                ] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/list`, {
+                const response_fetch_courses = await fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/list`,
+                    {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
                             Authorization: `Bearer ${token}`,
                         },
-                    }),
-                    fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/department/list`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    ),
-                ]);
+                    }
+                );
                 if (!response_fetch_courses.ok) {
                     message.error("Failed to fetch courses");
-                }
-                if (!response_fetch_dapartments.ok) {
-                    message.error("Failed to fetch departments");
                 }
                 const response_fetch_courses_data: IApiResponse<
                     ICourseResponse[]
@@ -126,22 +69,10 @@ const LecturerCoursesPage = () => {
                     })
                 );
 
-
-                const response_fetch_departments_data: IApiResponse<
-                    IDepartment[]
-                > = await response_fetch_dapartments.json();
-
-                const fetch_departments =
-                    response_fetch_departments_data.data.map((department) => ({
-                        value: department.department_id,
-                        label: department.department_name,
-                    }));
-
                 messageApi.success({
                     content: "Lấy thông tin thành công.",
                     duration: 1,
                 });
-                setDepartmentOptions(fetch_departments);
                 setCourses(fetch_courses);
             } catch (error) {
                 console.error("Failed to fetch courses: ", error);
@@ -334,39 +265,6 @@ const LecturerCoursesPage = () => {
             ),
         },
     ];
-
-    const successMessage = ({
-        content,
-        duration,
-    }: {
-        content: string;
-        duration?: number;
-    }) => {
-        messageApi.open({
-            type: "success",
-            content: content,
-            duration: duration || 2,
-        });
-    };
-
-    const errorMessage = ({
-        content,
-        duration,
-    }: {
-        content: string;
-        duration?: number;
-    }) => {
-        messageApi.open({
-            type: "error",
-            content: content,
-            duration: duration || 2,
-        });
-    };
-
-    const onFinishFailed: FormProps["onFinishFailed"] = (errorInfo) => {
-        console.log("Failed:", errorInfo);
-    };
-
 
     if (loadingPage) {
         return <Loading />;

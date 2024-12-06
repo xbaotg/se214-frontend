@@ -25,7 +25,6 @@ import {
     ITeacher,
     IDepartment,
     UserRoles,
-    IUser,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
@@ -835,7 +834,7 @@ const AdminCoursesPage = () => {
                     resetModalContentValues={resetCreateCourseForm}
                 />
             </div>
-            <Table<ICourse> dataSource={courses} columns={columns}/>
+            <Table<ICourse> dataSource={courses} columns={columns} />
         </div>
     );
 };

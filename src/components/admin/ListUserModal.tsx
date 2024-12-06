@@ -1,39 +1,23 @@
 import { SearchOutlined } from "@ant-design/icons";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import {
-    Table,
-    Button,
-    Form,
-    Input,
-    Space,
-    message,
-    Modal,
-} from "antd";
-import type { InputRef, FormProps, TableColumnType } from "antd";
+import { Table, Button, Input, Space, Modal } from "antd";
+import type { InputRef, TableColumnType } from "antd";
 
-import {
-    IApiResponse,
-    ICourse,
-    IUser,
-} from "@/types";
+import { IApiResponse, ICourse, IUser } from "@/types";
 import Highlighter from "react-highlight-words";
-import { MessageInstance } from "antd/es/message/interface";
 
 type DataIndex = keyof IUser;
 
-const ListUserModal = (
-    { 
-        icon,
-        token,
-        course,
-    }: {
-    icon: React.ReactNode,
-    token: string,
-    course: ICourse,
-    }) => {
-
-    const [messageApi, contextHolder] = message.useMessage();
+const ListUserModal = ({
+    icon,
+    token,
+    course,
+}: {
+    icon: React.ReactNode;
+    token: string;
+    course: ICourse;
+}) => {
     const [users, setUsers] = useState<IUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState("");
@@ -41,36 +25,38 @@ const ListUserModal = (
     const searchInput = useRef<InputRef>(null);
     const [isModelOpen, setIsModelOpen] = useState(false);
 
-
     const fetchUsers = async () => {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/enroller/list?course_id=${course.course_id}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-            },
-        });
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/enroller/list?course_id=${course.course_id}`,
+            {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
 
         if (!res.ok) {
             return;
         }
 
-        const response_fetch_user_data: IApiResponse<IUser[]> = await res.json();
+        const response_fetch_user_data: IApiResponse<IUser[]> =
+            await res.json();
 
         const fetch_user = response_fetch_user_data.data;
         setUsers(fetch_user);
-        console.log(fetch_user);
         setLoading(false);
-    }
+    };
 
     const handleOpenModel = () => {
         fetchUsers();
         setIsModelOpen(true);
-    }
+    };
 
     const handleCloseModel = () => {
         setIsModelOpen(false);
-    }
+    };
 
     const handleSearch = (
         selectedKeys: string[],
@@ -86,7 +72,6 @@ const ListUserModal = (
         clearFilters();
         setSearchText("");
     };
-
 
     const getColumnSearchProps = (
         dataIndex: DataIndex
@@ -224,7 +209,6 @@ const ListUserModal = (
 
     return (
         <div>
-            {contextHolder}
             <div onClick={handleOpenModel}>{icon}</div>
             <Modal
                 title={null}
@@ -232,16 +216,16 @@ const ListUserModal = (
                 onOk={handleCloseModel}
                 onCancel={handleCloseModel}
             >
-            <Table
-                columns={columns}
-                dataSource={users}
-                loading={loading}
-                rowKey="id"
-                pagination={{ pageSize: 10 }}
-            />
+                <Table
+                    columns={columns}
+                    dataSource={users}
+                    loading={loading}
+                    rowKey="id"
+                    pagination={{ pageSize: 10 }}
+                />
             </Modal>
         </div>
-    )
-}
+    );
+};
 
 export default ListUserModal;
