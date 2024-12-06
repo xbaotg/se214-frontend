@@ -25,22 +25,20 @@ import {
     ITeacher,
     IDepartment,
     UserRoles,
-    IUser,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { Plus, Trash2, PenLine, User } from "lucide-react";
+import { Plus, Trash2, PenLine, Check } from "lucide-react";
 import { dayOptions, lessionOptions, semesterOptions } from "@/constants";
 import { generatePeriodString } from "@/utils";
 import EditCourseModal from "@/components/admin/EditCourseModal";
-import ListUserModal from "@/components/admin/ListUserModal";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
 
 type DataIndex = keyof ICourse;
 
-const AdminCoursesPage = () => {
+const RegistingCoursesPage = () => {
     const { refreshToken: token } = useAuth();
     const [form] = Form.useForm();
     const [loadingPage, setLoadingPage] = useState(true);
@@ -115,7 +113,7 @@ const AdminCoursesPage = () => {
                     response_fetch_teachers,
                     response_fetch_dapartments,
                 ] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/list`, {
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/register/list`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -409,11 +407,14 @@ const AdminCoursesPage = () => {
                             />
                         </div>
                         <div className="cursor-pointer">
-                            <ListUserModal
-                                icon={<User size={16} />}
-                                token={token as string}
-                                course={record}
-                            />
+                            <Popconfirm
+                                title="Xác nhận duyệt học phần ?"
+                                onConfirm={() => {
+                                    handleConfirmCourse(record.course_id);
+                                }}
+                            >
+                                <Check size={16} color="green" />
+                            </Popconfirm>
                         </div>
                     </div>
                 </Space>
@@ -594,6 +595,44 @@ const AdminCoursesPage = () => {
             });
         }
     };
+
+    const handleConfirmCourse = async (course_id: string) => {
+        try {
+            const result = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/course/confirm?course_id=${course_id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data: IApiResponse<ICourseResponse> = await result.json();
+            if (result.ok) {
+                successMessage({
+                    content: `Xác nhận học phần ${
+                        data.data.course_code || ""
+                    } thành công.`,
+                    duration: 1,
+                });
+
+                setCourses((prev) =>
+                    prev.filter((course) => course.key !== course_id)
+                );
+            } else {
+                errorMessage({
+                    content: data.message || "An unexpected error occurred",
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            errorMessage({
+                content: "An unexpected error occurred",
+            });
+        }
+    }
 
     const modalContent = (
         <>
@@ -835,9 +874,9 @@ const AdminCoursesPage = () => {
                     resetModalContentValues={resetCreateCourseForm}
                 />
             </div>
-            <Table<ICourse> dataSource={courses} columns={columns}/>
+            <Table<ICourse> dataSource={courses} columns={columns} />
         </div>
     );
 };
 
-export default ProtectedRoute(AdminCoursesPage);
+export default ProtectedRoute(RegistingCoursesPage);

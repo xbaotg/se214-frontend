@@ -25,22 +25,20 @@ import {
     ITeacher,
     IDepartment,
     UserRoles,
-    IUser,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { Plus, Trash2, PenLine, User } from "lucide-react";
+import { Plus, Trash2, PenLine } from "lucide-react";
 import { dayOptions, lessionOptions, semesterOptions } from "@/constants";
 import { generatePeriodString } from "@/utils";
 import EditCourseModal from "@/components/admin/EditCourseModal";
-import ListUserModal from "@/components/admin/ListUserModal";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
 
 type DataIndex = keyof ICourse;
 
-const AdminCoursesPage = () => {
+const LecturerCoursesPage = () => {
     const { refreshToken: token } = useAuth();
     const [form] = Form.useForm();
     const [loadingPage, setLoadingPage] = useState(true);
@@ -115,7 +113,7 @@ const AdminCoursesPage = () => {
                     response_fetch_teachers,
                     response_fetch_dapartments,
                 ] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/list`, {
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/register/list`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
@@ -406,13 +404,6 @@ const AdminCoursesPage = () => {
                                 lessionOptions={lessionOptions}
                                 semesterOptions={semesterOptions}
                                 token={token as string}
-                            />
-                        </div>
-                        <div className="cursor-pointer">
-                            <ListUserModal
-                                icon={<User size={16} />}
-                                token={token as string}
-                                course={record}
                             />
                         </div>
                     </div>
@@ -835,9 +826,9 @@ const AdminCoursesPage = () => {
                     resetModalContentValues={resetCreateCourseForm}
                 />
             </div>
-            <Table<ICourse> dataSource={courses} columns={columns}/>
+            <Table<ICourse> dataSource={courses} columns={columns} />
         </div>
     );
 };
 
-export default ProtectedRoute(AdminCoursesPage);
+export default ProtectedRoute(LecturerCoursesPage);

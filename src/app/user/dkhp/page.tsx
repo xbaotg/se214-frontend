@@ -53,7 +53,6 @@ const DKHPPage = () => {
             .map((course_id) => getCourseByKey(course_id as string))
             .filter((course) => !selectedCourses.includes(course));
         try {
-            console.log("selectedCourses: ", selectedCourses);
             const response = await Promise.all(
                 selectedCourses.map((course) => {
                     if (!course) return;
@@ -61,7 +60,7 @@ const DKHPPage = () => {
                         messageApi.info(
                             `Course ${course.course_name} already registered`
                         );
-                        return;
+                        return false;
                     }
                     return fetch(
                         `${process.env.NEXT_PUBLIC_API_URL}/user/course/register`,

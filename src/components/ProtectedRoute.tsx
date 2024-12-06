@@ -24,6 +24,15 @@ export default function ProtectedRoute<P extends object>(
                     );
                     router.push("/");
                 }
+                if (
+                    pathname.startsWith("/lecturer") &&
+                    user.userRole !== "lecturer"
+                ) {
+                    messageApi.error(
+                        "You are not authorized to access this page."
+                    );
+                    router.push("/");
+                }
             }
             if (!loading) {
                 if (!isAuthenticated && pathname !== "/login") {

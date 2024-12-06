@@ -11,8 +11,22 @@ export const adminNavItems = [
         name: "Quản lý môn học",
         path: "/admin/courses",
     },
+    {
+        name: "Đăng kí lớp",
+        path: "/admin/register",
+    },
 ];
 
+export const lecturerNavItems = [
+    {
+        name: "Quản lý môn học",
+        path: "/lecturer/courses",
+    },
+    {
+        name: "Đăng kí lớp",
+        path: "/lecturer/register",
+    },
+];
 export const userNavItems = [
     {
         name: "Đăng ký học phần",
