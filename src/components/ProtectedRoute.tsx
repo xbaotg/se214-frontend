@@ -43,7 +43,7 @@ export default function ProtectedRoute<P extends object>(
                     router.push("/");
                 }
             }
-        }, [loading, isAuthenticated, router, pathname, user]);
+        }, [loading, isAuthenticated, router, pathname, user, messageApi]);
 
         return (
             <>

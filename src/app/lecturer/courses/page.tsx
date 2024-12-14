@@ -46,6 +46,12 @@ const LecturerCoursesPage = () => {
                     ICourseResponse[]
                 > = await response_fetch_courses.json();
 
+                if (!response_fetch_courses_data.data) {
+                    message.error("Chưa có môn học nào.");
+                    setCourses([]);
+                    return;
+                }
+
                 const fetch_courses = response_fetch_courses_data.data.map(
                     (course) => ({
                         key: course.id,
@@ -82,7 +88,7 @@ const LecturerCoursesPage = () => {
             }
         };
         fetchData();
-    }, [token]);
+    }, [token, messageApi]);
 
     const handleSearch = (
         selectedKeys: string[],

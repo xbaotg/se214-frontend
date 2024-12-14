@@ -206,7 +206,7 @@ const DKHPPage = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [messageApi, token, router]);
 
     const getDepartmentName = (department_id: string | undefined) => {
         if (!department_id) return "";

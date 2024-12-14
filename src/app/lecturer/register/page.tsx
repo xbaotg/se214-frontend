@@ -113,13 +113,16 @@ const LecturerCoursesPage = () => {
                     response_fetch_teachers,
                     response_fetch_dapartments,
                 ] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/register/list`, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
+                    fetch(
+                        `${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/register/list`,
+                        {
+                            method: "GET",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${token}`,
+                            },
+                        }
+                    ),
                     fetch(
                         `${process.env.NEXT_PUBLIC_API_URL}/user/list?role=${UserRoles.Lecturer}`,
                         {
@@ -212,7 +215,7 @@ const LecturerCoursesPage = () => {
             }
         };
         fetchData();
-    }, [token]);
+    }, [token, messageApi]);
 
     const handleSearch = (
         selectedKeys: string[],
@@ -811,7 +814,9 @@ const LecturerCoursesPage = () => {
         <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
             {contextHolder}
             <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">Môn học</span>
+                <span className="text-xl text-red-500 font-bold">
+                    Những môn đăng ký
+                </span>
                 <AddModal
                     open={open}
                     setOpen={setOpen}

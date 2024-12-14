@@ -10,7 +10,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 
 const TKBPage = () => {
-    // const token = getCookie("refresh_token");
     const { refreshToken: token } = useAuth();
     const [loading, setLoading] = useState(true);
     const [messageApi, contextHolder] = message.useMessage();
@@ -63,7 +62,7 @@ const TKBPage = () => {
             }
         };
         fetchCourses();
-    }, []);
+    }, [messageApi, token]);
 
     if (loading) {
         return <Loading />;

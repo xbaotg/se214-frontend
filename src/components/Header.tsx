@@ -8,6 +8,9 @@ import { message } from "antd";
 import { Button } from "antd";
 import { useRouter } from "next/navigation";
 import { INavItem } from "@/types";
+import SettingModal from "./admin/SettingModal";
+import { useAuth } from "@/hooks/auth";
+import { SettingFilled } from "@ant-design/icons";
 
 const Header = ({
     icon,
@@ -18,6 +21,7 @@ const Header = ({
     headerContent: string;
     navItems: INavItem[];
 }) => {
+    const { refreshToken: token } = useAuth();
     const [messageApi, contextHolder] = message.useMessage();
     const router = useRouter();
     const pathname = usePathname();
@@ -93,8 +97,14 @@ const Header = ({
                                 {item.name}
                             </Link>
                         ))}
+                    
                     </nav>
                     <div className="flex items-center space-x-10">
+                        <SettingModal
+                            headerContent={headerContent}
+                            token={token}
+                        />
+
                         <Button
                             className="ml-auto border-2 text-red-500 shadow-md"
                             onClick={handleLogout}

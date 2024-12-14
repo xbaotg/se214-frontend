@@ -1,11 +1,13 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { Table, Button, Input, Space, Modal } from "antd";
+import { Table, Button, Input, Space, Modal, Popconfirm, message } from "antd";
 import type { InputRef, TableColumnType } from "antd";
 
 import { IApiResponse, ICourse, IUser } from "@/types";
 import Highlighter from "react-highlight-words";
+import { render } from "react-dom";
+import { Trash2 } from "lucide-react";
 
 type DataIndex = keyof IUser;
 
@@ -13,10 +15,12 @@ const ListUserModal = ({
     icon,
     token,
     course,
+    setReFetch,
 }: {
     icon: React.ReactNode;
     token: string;
     course: ICourse;
+    setReFetch: (reFetch: boolean) => void;
 }) => {
     const [users, setUsers] = useState<IUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -24,6 +28,7 @@ const ListUserModal = ({
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef<InputRef>(null);
     const [isModelOpen, setIsModelOpen] = useState(false);
+    const [messageApi, contextHolder] = message.useMessage();
 
     const fetchUsers = async () => {
         const res = await fetch(
@@ -48,6 +53,38 @@ const ListUserModal = ({
         setUsers(fetch_user);
         setLoading(false);
     };
+
+    const handleDelete = async (user: IUser) => {
+        // console.log(course);
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/user/course/unregister_admin`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    user_id: user["ID"],
+                    course_id: course.course_id,
+                    course_year: course.course_year,
+                    course_semester: course.course_semester,
+                }),
+            }
+        );
+
+        console.log(res.ok);
+
+        if (!res.ok) {
+            messageApi.error("Xóa thất bại");
+            return;
+        }
+
+        messageApi.success("Xóa thành công");
+        setReFetch(true);
+        setUsers(users.filter((u) => u["ID"] !== user["ID"]));
+    }
+
 
     const handleOpenModel = () => {
         fetchUsers();
@@ -205,10 +242,30 @@ const ListUserModal = ({
             key: "UserEmail",
             ...getColumnSearchProps("email"),
         },
+        {
+            title: "Thao tác",
+            key: "action",
+            render: (text: string, record: IUser) => (
+                <Space size="middle">
+                    <Popconfirm
+                        className="hover:text-red-500"
+                        title="Xác nhận xóa ?"
+                        onConfirm={() => handleDelete(record)}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Trash2 size={24} />
+                    </Popconfirm>
+                </Space>
+            ),
+
+            
+        }
     ];
 
     return (
         <div>
+            {contextHolder}
             <div onClick={handleOpenModel}>{icon}</div>
             <Modal
                 title={null}

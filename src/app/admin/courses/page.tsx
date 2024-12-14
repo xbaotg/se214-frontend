@@ -1,7 +1,7 @@
 "use client";
 
 import { SearchOutlined } from "@ant-design/icons";
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
 import {
     Divider,
@@ -49,6 +49,7 @@ const AdminCoursesPage = () => {
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [open, setOpen] = useState<boolean>(false);
+    const [reFetch, setReFetch] = useState<boolean>(false);
     const [teacherOptions, setTeacherOptions] = useState<
         {
             value: string;
@@ -175,6 +176,8 @@ const AdminCoursesPage = () => {
                         current_enroll: course.current_enroll,
                         course_start_shift: course.course_start_shift,
                         course_end_shift: course.course_end_shift,
+                        course_year: course.course_year,
+                        course_semester: course.course_semester,
                     })
                 );
 
@@ -213,7 +216,8 @@ const AdminCoursesPage = () => {
             }
         };
         fetchData();
-    }, [token]);
+        setReFetch(false);
+    }, [token, messageApi, reFetch]);
 
     const handleSearch = (
         selectedKeys: string[],
@@ -412,6 +416,7 @@ const AdminCoursesPage = () => {
                                 icon={<User size={16} />}
                                 token={token as string}
                                 course={record}
+                                setReFetch={setReFetch}
                             />
                         </div>
                     </div>

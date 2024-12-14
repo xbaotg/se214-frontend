@@ -74,7 +74,7 @@ const AdminTeacherPage = () => {
             }
         };
         fetchTeachers();
-    }, []);
+    }, [messageApi, token]);
 
     const handleSearch = (
         selectedKeys: string[],

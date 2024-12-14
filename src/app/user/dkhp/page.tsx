@@ -89,7 +89,7 @@ const DKHPPage = () => {
                         );
                         return;
                     }
-                    messageApi.info(`Unregister course ${course.course_name}`);
+                    // messageApi.info(`Unregister course ${course.course_name}`);
                     return fetch(
                         `${process.env.NEXT_PUBLIC_API_URL}/user/course/unregister`,
                         {
@@ -107,33 +107,61 @@ const DKHPPage = () => {
                     );
                 })
             );
+
             const unSubResults = unSubResponse.map((res) => {
                 return res?.ok;
             });
-
+            // // console.log("unSubResults: ", unSubResults);
             const unSubSuccessfulIndexes = unSubResults.map((result, index) =>
                 result ? index : -1
             );
 
-            const unSubRegisteredCourses = unSubSuccessfulIndexes.map(
+            const unSubUnSuccessfulIndexes = unSubResults.map((result, index) =>
+                result ? -1 : index
+            );
+
+            const unSubSuccessfulCourses = unSubSuccessfulIndexes.map(
                 (index) => unSelectedCourses[index]
             );
 
-            unSubRegisteredCourses.forEach((course) => {
+            const unSubUnSuccessfulCourses = unSubUnSuccessfulIndexes.map(
+                (index) => unSelectedCourses[index]
+            );
+
+            unSubSuccessfulCourses.forEach((course) => {
                 const index = courses.findIndex(
                     (c) => c.course_id === course?.course_id
                 );
                 if (index !== -1) {
+                    messageApi.success(
+                        `Unregister course ${course?.course_name} successfully`
+                    );
                     courses[index].course_size = `${
                         parseInt(course?.course_size.split("/")[0] || "0") - 1
                     }/${parseInt(course?.course_size.split("/")[1] || "0")}`;
-                    // setSelectedRowKeys((keys) =>
-                    //     keys.filter((key) => key === course?.course_id)
-                    // );
+                    setAlreadyRegisteredCourses(
+                        (keys) => keys.filter((key) => key !== courses[index].course_id)
+                    );
+                } 
+            });
+
+            unSubUnSuccessfulCourses.forEach((course) => {
+                const index = courses.findIndex(
+                    (c) => c.course_id === course?.course_id
+                );
+                if (index !== -1) {
+                    messageApi.error(
+                        `Failed to unregister course ${course?.course_name}`
+                    );
+
+                    setSelectedRowKeys(prev => 
+                    [...prev, courses[index].course_id]
+                    );
+
                 }
             });
 
-            // Count number of successful requests
+            // // Count number of successful requests
             const results = response.map((res) => {
                 if (!res) return true;
                 return res?.ok;
@@ -147,51 +175,51 @@ const DKHPPage = () => {
                 return result ? -1 : index;
             });
 
+            const successfulCourses = successfulIndexes.map(
+                (index) => selectedCourses[index]
+            );
+
             const unSuccessfulCourses = unSuccessfulIndexes.map(
                 (index) => selectedCourses[index]
             );
+
+
             unSuccessfulCourses.forEach((course) => {
-                if (!course) return;
                 const index = courses.findIndex(
                     (c) => c.course_id === course?.course_id
                 );
                 console.log("index: ", index);
-                messageApi.error(
-                    `Failed to register course ${course?.course_name}`
-                );
                 if (index !== -1) {
-                    // const filteredKeys = selectedRowKeys.filter(
-                    //     (key) => key !== courses[index].course_id
-                    // );
-                    // console.log("filteredKeys: ", filteredKeys);
-
-                    setSelectedRowKeys((keys) =>
-                        keys.filter((key) => key !== courses[index].course_id)
+                    messageApi.error(
+                        `Failed to register course ${course?.course_name}`
                     );
-                    setAlreadyRegisteredCourses((keys) =>
+                    setSelectedRowKeys((keys) => 
                         keys.filter((key) => key !== courses[index].course_id)
                     );
                 }
             });
 
-            const registeredCourses = successfulIndexes.map(
-                (index) => selectedCourses[index]
-            );
-
-            registeredCourses.forEach((course) => {
+            successfulCourses.forEach((course) => {
                 const index = courses.findIndex(
                     (c) => c.course_id === course?.course_id
                 );
-                if (
-                    index !== -1 &&
-                    !alreadyRegisteredCourses.includes(courses[index].course_id)
-                ) {
+                if (index !== -1) {
+                    if (alreadyRegisteredCourses.includes(courses[index].course_id)) {
+                        return;
+                    }
+                    messageApi.success(
+                        `Register course ${course?.course_name} successfully`
+                    );
                     courses[index].course_size = `${
                         parseInt(course?.course_size.split("/")[0] || "0") + 1
                     }/${parseInt(course?.course_size.split("/")[1] || "0")}`;
                     // setSelectedRowKeys((keys) =>
                     //     keys.filter((key) => key !== course?.course_id)
                     // );
+                    // console.log(alreadyRegisteredCourses, courses[index].course_id);
+                    setAlreadyRegisteredCourses(prev => 
+                        [...prev, courses[index].course_id]
+                    );
                 }
             });
 
@@ -204,14 +232,14 @@ const DKHPPage = () => {
             );
 
             setCourses([...courses]);
-            setAlreadyRegisteredCourses(
-                selectedRowKeys.filter(
-                    (key) =>
-                        !unSuccessfulCourses.includes(
-                            getCourseByKey(key as string)
-                        )
-                )
-            );
+            // setAlreadyRegisteredCourses(
+            //     selectedRowKeys.filter(
+            //         (key) =>
+            //             !unSuccessfulCourses.includes(
+            //                 getCourseByKey(key as string)
+            //             )
+            //     )
+            // );
             // setSelectedRowKeys([...selectedRowKeys]);
         } catch (error) {
             console.error("Failed to register courses: ", error);
@@ -349,7 +377,7 @@ const DKHPPage = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [messageApi, token, router]);
 
     const getDepartmentName = (department_id: string | undefined) => {
         if (!department_id) return "";

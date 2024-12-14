@@ -71,7 +71,7 @@ const AdminDepartmentPage = () => {
             }
         };
         fetchDepartments();
-    }, []);
+    }, [messageApi, token]);
 
     const updatedDepartments = (new_departments: IDepartment[]) => {
         setDepartments(new_departments);
