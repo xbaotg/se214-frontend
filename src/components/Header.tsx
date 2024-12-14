@@ -10,7 +10,6 @@ import { useRouter } from "next/navigation";
 import { INavItem } from "@/types";
 import SettingModal from "./admin/SettingModal";
 import { useAuth } from "@/hooks/auth";
-import { SettingFilled } from "@ant-design/icons";
 
 const Header = ({
     icon,

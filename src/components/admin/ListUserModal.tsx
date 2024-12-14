@@ -4,9 +4,8 @@ import type { FilterDropdownProps } from "antd/es/table/interface";
 import { Table, Button, Input, Space, Modal, Popconfirm, message } from "antd";
 import type { InputRef, TableColumnType } from "antd";
 
-import { IApiResponse, ICourse, IUser } from "@/types";
+import { IApiResponse, ICourse, IUser, IUserResponse } from "@/types";
 import Highlighter from "react-highlight-words";
-import { render } from "react-dom";
 import { Trash2 } from "lucide-react";
 
 type DataIndex = keyof IUser;
@@ -20,7 +19,7 @@ const ListUserModal = ({
     icon: React.ReactNode;
     token: string;
     course: ICourse;
-    setReFetch: (reFetch: boolean) => void;
+    setReFetch?: (reFetch: boolean) => void;
 }) => {
     const [users, setUsers] = useState<IUser[]>([]);
     const [loading, setLoading] = useState(true);
@@ -46,10 +45,22 @@ const ListUserModal = ({
             return;
         }
 
-        const response_fetch_user_data: IApiResponse<IUser[]> =
+        const response_fetch_user_data: IApiResponse<IUserResponse[]> =
             await res.json();
 
-        const fetch_user = response_fetch_user_data.data;
+        const fetch_user = response_fetch_user_data.data.map((user: IUserResponse) => (
+            {
+                id: user.id,
+                username: user.username,
+                userFullname: user.user_fullname,
+                email: user.email,
+                year: user.year,
+                userRole: user.user_role,
+                createdAt: user.created_at,
+                updatedAt: user.updated_at,
+            }
+        ));
+        console.log(fetch_user);
         setUsers(fetch_user);
         setLoading(false);
     };
@@ -65,7 +76,7 @@ const ListUserModal = ({
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    user_id: user["ID"],
+                    user_id: user.id,
                     course_id: course.course_id,
                     course_year: course.course_year,
                     course_semester: course.course_semester,
@@ -81,8 +92,10 @@ const ListUserModal = ({
         }
 
         messageApi.success("Xóa thành công");
-        setReFetch(true);
-        setUsers(users.filter((u) => u["ID"] !== user["ID"]));
+        if (setReFetch) {
+            setReFetch(true);
+        }
+        setUsers(users.filter((u: IUser) => u.id !== user.id));
     }
 
 
@@ -223,8 +236,8 @@ const ListUserModal = ({
     const columns = [
         {
             title: "Username",
-            dataIndex: "Username",
-            key: "Username",
+            dataIndex: "username",
+            key: "username",
             render: (text: string) => (
                 <span className="text-blue-300 font-semibold">{text}</span>
             ),
@@ -232,36 +245,39 @@ const ListUserModal = ({
         },
         {
             title: "Họ và tên",
-            dataIndex: "UserFullname",
-            key: "UserFullname",
+            dataIndex: "user_fullname",
+            key: "user_fullname",
             ...getColumnSearchProps("userFullname"),
         },
         {
             title: "Email",
-            dataIndex: "UserEmail",
-            key: "UserEmail",
+            dataIndex: "email",
+            key: "email",
             ...getColumnSearchProps("email"),
         },
         {
-            title: "Thao tác",
+            title: "Action",
             key: "action",
             render: (text: string, record: IUser) => (
-                <Space size="middle">
-                    <Popconfirm
-                        className="hover:text-red-500"
-                        title="Xác nhận xóa ?"
-                        onConfirm={() => handleDelete(record)}
-                        okText="Yes"
-                        cancelText="No"
-                    >
-                        <Trash2 size={24} />
-                    </Popconfirm>
-                </Space>
+                <Popconfirm
+                    title="Bạn có chắc muốn xóa?"
+                    onConfirm={() => handleDelete(record)}
+                    okText="Có"
+                    cancelText="Không"
+                >
+                    <Button
+                        type="primary"
+                        danger
+                        icon={<Trash2 size={20} />}
+                    />
+                </Popconfirm>
             ),
-
-            
         }
     ];
+
+    if (!setReFetch) {
+        columns.pop();
+    }
 
     return (
         <div>

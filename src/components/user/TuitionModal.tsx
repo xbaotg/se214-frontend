@@ -1,6 +1,5 @@
-import { CreateDepartmentFormValues, ICourse, ITuition, PayTuitionFormValues, TuStatus } from "@/types";
-import { Modal, message, Input, Divider, InputNumber, Table } from "antd";
-import { useState } from "react";
+import { ICourse } from "@/types";
+import { Modal, Input, Divider, Table } from "antd";
 
 const TuitionModal = ({
     courses,
@@ -9,11 +8,11 @@ const TuitionModal = ({
     setIsModalOpen,
 }: {
     isModalOpen: boolean;
-    tuition: Number;
+    tuition: number;
     setIsModalOpen: (isOpen: boolean) => void;
     courses: ICourse[];
 }) => {
-    const [messageApi, contextHolder] = message.useMessage();
+    // const [messageApi, contextHolder] = message.useMessage();
 
     const handleOk = async () => {
         setIsModalOpen(false);
@@ -69,7 +68,7 @@ const TuitionModal = ({
 
     return (
         <div>
-            {contextHolder}
+            {/* {contextHolder} */}
             <Modal
                 title={null}
                 open={isModalOpen}

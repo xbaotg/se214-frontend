@@ -1,15 +1,14 @@
 "use client";
 
-import { DollarCircleFilled, DollarCircleOutlined, MoneyCollectFilled, MoneyCollectTwoTone, SearchOutlined } from "@ant-design/icons";
+import { DollarCircleOutlined, MoneyCollectTwoTone, SearchOutlined } from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Form, InputNumber, Modal, DatePicker } from "antd";
-import { InputRef, TableColumnType, FormProps, Divider } from "antd";
+import { message, Table, Button, Input, Space, Modal} from "antd";
+import { InputRef, TableColumnType, Divider } from "antd";
 
 import {
     CalTuitionFormValues,
     CalTuitionResponse,
-    CreateTuitionFormValues,
     IApiResponse,
     ICourse,
     ITuition,
@@ -20,7 +19,6 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
 import PayTuitionModal from "@/components/admin/TuitionModal";
-import TypedInputNumber from "antd/es/input-number";
 import TuitionModal from "@/components/user/TuitionModal";
 
 type DataIndex = keyof ITuition;
@@ -34,11 +32,11 @@ const TuitionPage = () => {
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [courses, setCourses] = useState<ICourse[]>([]);
-    const [tuition, setTuition] = useState<Number>(0);
-    const [form, setForm] = useState<CalTuitionFormValues>({
+    const [tuition, setTuition] = useState<number>(0);
+    const form: CalTuitionFormValues = {
         semester: 1,
         year: new Date().getFullYear(),
-    });
+    };
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isTuitionModalOpen, setIsTuitionModalOpen] = useState(false);
     const fetchTuitions = async () => {

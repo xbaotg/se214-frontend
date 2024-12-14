@@ -151,6 +151,7 @@ export interface ISignUpFormValues {
   password: string;
   retypePassword: string;
   user_fullname: string;
+  user_role: UserRoles;
   year: number;
 }
 
@@ -226,6 +227,7 @@ export interface IListUserResponse {
   email: string;
   username: string;
   user_fullname: string;
+  user_role: UserRoles;
   year: number;
 }
 

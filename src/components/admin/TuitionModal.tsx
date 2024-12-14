@@ -1,5 +1,5 @@
-import { CreateDepartmentFormValues, ITuition, PayTuitionFormValues, TuStatus } from "@/types";
-import { Modal, message, Input, Divider, InputNumber } from "antd";
+import { ITuition, PayTuitionFormValues, TuStatus } from "@/types";
+import { Modal, message, Divider, InputNumber } from "antd";
 import { useState } from "react";
 
 const PayTuitionModal = ({

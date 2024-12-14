@@ -1,7 +1,7 @@
 export const adminNavItems = [
   {
-    name: "Quản lý giảng viên",
-    path: "/admin/teachers",
+    name: "Quản lý người dùng",
+    path: "/admin/users",
   },
   {
     name: "Quản lý khoa",

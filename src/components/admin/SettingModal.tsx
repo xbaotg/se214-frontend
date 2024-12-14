@@ -1,8 +1,8 @@
 
-import { CreateDepartmentFormValues, IApiResponse, IStateResponse, ITuition, ITuitionTypeResponse, PayTuitionFormValues, State, TuStatus, UpdateCalTuitionFormValues } from "@/types";
+import { IApiResponse, IStateResponse, ITuitionTypeResponse,State, UpdateCalTuitionFormValues } from "@/types";
 import { SettingOutlined } from "@ant-design/icons";
-import { Modal, message, Input, Divider, InputNumber, Select } from "antd";
-import { useEffect, useState } from "react";
+import { Modal, message, Divider, InputNumber, Select } from "antd";
+import { useState } from "react";
 
 const SettingModal = ({
     headerContent,
@@ -30,12 +30,6 @@ const SettingModal = ({
         { value: "buffet", label: "Buffet" },
         { value: "credit", label: "Credit" },
     ];
-
-    const formattedAmount = new Intl.NumberFormat("de-DE", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 0,
-    })
 
     const fetchState = async () => {
         try {

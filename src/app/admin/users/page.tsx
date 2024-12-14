@@ -3,16 +3,16 @@
 import { SearchOutlined } from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Form, InputNumber } from "antd";
+import { message, Table, Button, Input, Space, Form, InputNumber, Select } from "antd";
 import type { InputRef, TableColumnType, FormProps } from "antd";
 
 import {
     IApiResponse,
     IListUserResponse,
-    ITeacher,
     ISignUpResponse,
     UserRoles,
     ISignUpFormValues,
+    IUser,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
@@ -21,12 +21,12 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
 
-type DataIndex = keyof ITeacher;
+type DataIndex = keyof IUser;
 
-const AdminTeacherPage = () => {
+const AdminUserPage = () => {
     const { refreshToken: token } = useAuth();
     const [loadingPage, setLoadingPage] = useState(true);
-    const [teachers, setTeachers] = useState<ITeacher[]>([]);
+    const [users, setUsers] = useState<IUser[]>([]);
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef<InputRef>(null);
@@ -38,7 +38,7 @@ const AdminTeacherPage = () => {
         const fetchTeachers = async () => {
             try {
                 const response = await fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/user/list?role=${UserRoles.Lecturer}`,
+                    `${process.env.NEXT_PUBLIC_API_URL}/user/list`,
                     {
                         method: "GET",
                         headers: {
@@ -50,25 +50,28 @@ const AdminTeacherPage = () => {
                 const data: IApiResponse<IListUserResponse[]> =
                     await response.json();
                 if (response.ok) {
-                    const fetch_teachers = data.data.map((teacher) => ({
+                    const fetch_users = data.data.map((teacher) => ({
                         key: teacher.id,
                         id: teacher.id,
                         username: teacher.username,
                         email: teacher.email,
-                        user_fullname: teacher.user_fullname,
+                        userFullname: teacher.user_fullname,
                         year: teacher.year,
+                        userRole: teacher.user_role,
+                        createdAt: "", 
+                        updatedAt: "",
                     }));
                     messageApi.success({
-                        content: "Lấy danh sách giảng viên thành công",
+                        content: "Lấy danh sách người dùng thành công",
                         duration: 1,
                     });
-                    setTeachers(fetch_teachers);
+                    setUsers(fetch_users);
                 } else {
-                    message.error("Lấy danh sách giảng viên không thành công");
+                    message.error("Lấy danh sách người dùng không thành công");
                 }
             } catch (error) {
-                console.error("Failed to fetch teachers: ", error);
-                message.error("Lấy danh sách giảng viên không thành công");
+                console.error("Failed to fetch users: ", error);
+                message.error("Lấy danh sách người dùng không thành công");
             } finally {
                 setLoadingPage(false);
             }
@@ -93,7 +96,7 @@ const AdminTeacherPage = () => {
 
     const getColumnSearchProps = (
         dataIndex: DataIndex
-    ): TableColumnType<ITeacher> => ({
+    ): TableColumnType<IUser> => ({
         filterDropdown: ({
             setSelectedKeys,
             selectedKeys,
@@ -201,6 +204,52 @@ const AdminTeacherPage = () => {
             ),
     });
 
+    const getColumnSearchSelectProps = (
+        dataIndex: DataIndex
+    ): TableColumnType<IUser> => ({
+        filterDropdown: ({
+            setSelectedKeys,
+            selectedKeys,
+            confirm,
+        }) => (
+        
+            <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
+                <Select
+                    placeholder={`Search ${dataIndex}`}
+                    value={selectedKeys[0]}
+                    onChange={(value) => {
+                        setSelectedKeys(value ? [value] : []);
+                        handleSearch(
+                            selectedKeys as string[],
+                            confirm,
+                            dataIndex
+                        )}
+                    }
+                    style={{ marginBottom: 8, display: "block" }}
+                >
+                    <Select.Option value={UserRoles.Lecturer}>Giảng viên</Select.Option>
+                    <Select.Option value={UserRoles.User}>Sinh viên</Select.Option>
+                    <Select.Option value={UserRoles.Admin}>Admin</Select.Option>
+                    <Select.Option value="">All</Select.Option>
+                </Select>
+            </div>
+
+        ),
+        filterIcon: (filtered: boolean) => (
+            <SearchOutlined
+                style={{ color: filtered ? "#1677ff" : undefined }}
+            />
+        ),
+        onFilter: (value, record) =>
+            record[dataIndex]
+                ? record[dataIndex]
+                      .toString()
+                      .toLowerCase()
+                      .includes((value as string).toLowerCase())
+                : false,
+        });
+                        
+
     const columns = [
         {
             title: "Username",
@@ -213,15 +262,32 @@ const AdminTeacherPage = () => {
         },
         {
             title: "Họ tên",
-            dataIndex: "user_fullname",
-            key: "user_fullname",
-            ...getColumnSearchProps("user_fullname"),
+            dataIndex: "userFullname",
+            key: "userFullname",
+            ...getColumnSearchProps("userFullname"),
         },
         {
             title: "Email",
             dataIndex: "email",
             key: "email",
             ...getColumnSearchProps("email"),
+        },
+        {
+            title: "Quyền",
+            dataIndex: "userRole",
+            key: "userRole",
+            ...getColumnSearchSelectProps("userRole"),
+            render: (text: string) => (
+                <Select
+                    defaultValue={text}
+                    style={{ width: 120 }}
+                    options={[
+                        { label: "Giảng viên", value: UserRoles.Lecturer },
+                        { label: "Sinh viên", value: UserRoles.User },
+                        { label: "Admin", value: UserRoles.Admin },
+                    ]}
+                />
+            ),
         },
         {
             title: "Năm sinh",
@@ -237,8 +303,8 @@ const AdminTeacherPage = () => {
         //                 <EditTeacherModal
         //                     icon={<PenLine size={16} />}
         //                     teacher={record}
-        //                     allTeachers={teachers}
-        //                     setTeachers={setTeachers}
+        //                     allTeachers={users}
+        //                     setUsers={setUsers}
         //                     token={token as string}
         //                 />
         //             </div>
@@ -289,6 +355,7 @@ const AdminTeacherPage = () => {
             retypePassword,
             user_fullname,
             year,
+            user_role,
         } = values;
 
         if (password !== retypePassword) {
@@ -312,8 +379,9 @@ const AdminTeacherPage = () => {
                         password: password,
                         user_fullname: user_fullname,
                         year: year,
-                        user_role: UserRoles.Lecturer,
+                        user_role: user_role,
                         user_email: email,
+
                     }),
                 }
             );
@@ -326,15 +394,18 @@ const AdminTeacherPage = () => {
                 });
 
                 setOpen(false);
-                setTeachers((prev) => [
+                setUsers((prev) => [
                     ...prev,
                     {
                         key: data.data.username,
                         id: data.data.id,
                         username: data.data.username,
                         email: email,
-                        user_fullname: user_fullname,
+                        userFullname: user_fullname,
+                        userRole: user_role,
                         year: year,
+                        createdAt: "",
+                        updatedAt: "",
                     },
                 ]);
             } else {
@@ -453,6 +524,26 @@ const AdminTeacherPage = () => {
             >
                 <InputNumber max={new Date().getFullYear()} />
             </Form.Item>
+
+            <Form.Item
+                label="Quyền"
+                name="user_role"
+                initialValue={UserRoles.Lecturer}
+                rules={[
+                    {
+                        required: true,
+                        message: "Please input your role!",
+                    },
+                ]}
+            >
+                <Select>
+                    <Select.Option value={UserRoles.Lecturer}>
+                        Giảng viên
+                    </Select.Option>
+                    <Select.Option value={UserRoles.User}>Sinh viên</Select.Option>
+                    <Select.Option value={UserRoles.Admin}>Admin</Select.Option>
+                </Select>
+            </Form.Item>
         </>
     );
 
@@ -465,7 +556,7 @@ const AdminTeacherPage = () => {
             {contextHolder}
             <div className="flex justify-around my-5">
                 <span className="text-xl text-red-500 font-bold">
-                    Giảng viên
+                    Người dùng
                 </span>
                 <AddModal
                     open={open}
@@ -474,15 +565,15 @@ const AdminTeacherPage = () => {
                     form={form}
                     onFinishFailed={onFinishFailed}
                     buttonIcon={<Plus size={16} />}
-                    buttonContent="Thêm giảng viên"
-                    formTitle="Thêm giảng viên mới"
+                    buttonContent="Thêm người dùng"
+                    formTitle="Thêm người dùng mới"
                     formItems={formItems}
-                    submitButtonContent="Đăng ký giảng viên"
+                    submitButtonContent="Đăng ký người dùng"
                 />
             </div>
-            <Table<ITeacher> dataSource={teachers} columns={columns} />
+            <Table<IUser> dataSource={users} columns={columns} />
         </div>
     );
 };
 
-export default ProtectedRoute(AdminTeacherPage);
+export default ProtectedRoute(AdminUserPage);
