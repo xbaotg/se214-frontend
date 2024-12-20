@@ -67,7 +67,7 @@ export interface ICourse {
   course_id: string;
   course_code?: string;
   course_teacher_id: string | null;
-  course_name: string;
+  course_name: string | null;
   course_department?: string | null;
   course_year?: number | null | string;
   course_semester?: number | null | string;
@@ -205,11 +205,11 @@ export interface EditDepartmentFormValues {
 }
 
 export interface CreateCourseFormValues {
-  course_code: string;
+  // course_code: string;
   course_id: string;
   course_teacher_id: string | null;
   course_department: string | null;
-  course_name: string;
+  course_name: string | null;
   course_fullname: string;
   course_credit: number | null | string;
   course_year: number | null | string;
@@ -220,6 +220,43 @@ export interface CreateCourseFormValues {
   max_enroll: number | null | string;
   current_enroll: number;
   course_room: string;
+}
+
+export interface CreatePrerequisiteFormValues {
+  course_id: string;
+  prerequisite_id: string;
+}
+export interface CreateSubjectFormValues {
+  course_fullname: string;
+  course_name: string;
+}
+//  "course_name": "CS331",
+//   "course_fullname": "CV++++",
+//   "department_code": ""
+
+export interface ListSubjectResponse {
+  course_name: string;
+  course_fullname: string;
+  department_code: string;
+}
+//  "prerequisite_id": "CS214",
+//       "course_fullname": "CV"
+export interface ListPrerequisiteResponse {
+  prerequisite_id: string;
+  course_fullname: string;
+}
+
+export interface IPrerequisite {
+  key?: string;
+  prerequisite_id: string;
+  course_fullname: string;
+}
+
+export interface ISubject {
+  key?: string;
+  course_name: string;
+  course_fullname: string;
+  department_code: string | null;
 }
 
 export interface IListUserResponse {

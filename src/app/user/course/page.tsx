@@ -136,7 +136,7 @@ const DKHPPage = () => {
                         ),
                         // BCK code this for registered courses [
                         fetch(
-                            `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=2024&course_semester=1`,
+                            `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=${process.env.NEXT_PUBLIC_CURRENT_YEAR}&course_semester=${process.env.NEXT_PUBLIC_CURRENT_SEMESTER}`,
                             {
                                 method: "GET",
                                 headers: {

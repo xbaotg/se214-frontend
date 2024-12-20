@@ -4,13 +4,13 @@ import type { FilterDropdownProps } from "antd/es/table/interface";
 import { Table, Button, Input, Space, Modal, Popconfirm, message } from "antd";
 import type { InputRef, TableColumnType } from "antd";
 
-import { IApiResponse, ICourse, IUser, IUserResponse } from "@/types";
+import { IApiResponse, IPrerequisite, ISubject,ListPrerequisiteResponse } from "@/types";
 import Highlighter from "react-highlight-words";
 import { Trash2 } from "lucide-react";
 
-type DataIndex = keyof IUser;
+type DataIndex = keyof IPrerequisite;
 
-const ListUserModal = ({
+const ListPrerequisite = ({
     icon,
     token,
     course,
@@ -18,10 +18,10 @@ const ListUserModal = ({
 }: {
     icon: React.ReactNode;
     token: string;
-    course: ICourse;
+    course: ISubject;
     setReFetch?: (reFetch: boolean) => void;
 }) => {
-    const [users, setUsers] = useState<IUser[]>([]);
+    const [subjects, setSubjects] = useState<IPrerequisite[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
@@ -31,7 +31,7 @@ const ListUserModal = ({
 
     const fetchUsers = async () => {
         const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/enroller/list?course_id=${course.course_id}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/subject/prerequisite?course_name=${course.course_name}`,
             {
                 method: "GET",
                 headers: {
@@ -42,33 +42,29 @@ const ListUserModal = ({
         );
 
         if (!res.ok) {
+            messageApi.error("Lỗi lấy dữ liệu");
             return;
         }
 
-        const response_fetch_user_data: IApiResponse<IUserResponse[]> =
-            await res.json();
+        const response_fetch_prerequisite_data: IApiResponse<ListPrerequisiteResponse[]> = await res.json();
 
-        const fetch_user = response_fetch_user_data.data.map((user: IUserResponse) => (
-            {
-                id: user.id,
-                username: user.username,
-                userFullname: user.user_fullname,
-                email: user.email,
-                year: user.year,
-                userRole: user.user_role,
-                createdAt: user.created_at,
-                updatedAt: user.updated_at,
-            }
-        ));
-        console.log(fetch_user);
-        setUsers(fetch_user);
+        const fetch_prerequisite = response_fetch_prerequisite_data.data.map(
+            (subject: ListPrerequisiteResponse) => ({
+                key: subject.prerequisite_id,
+                prerequisite_id: subject.prerequisite_id,
+                course_fullname: subject.course_fullname,
+            })
+        );
+        messageApi.success("Lấy dữ liệu thành công");
+
+        setSubjects(fetch_prerequisite);
         setLoading(false);
     };
 
-    const handleDelete = async (user: IUser) => {
+    const handleDelete = async (subject: IPrerequisite) => {
         // console.log(course);
         const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/user/course/unregister_admin`,
+            `${process.env.NEXT_PUBLIC_API_URL}/subject/delete_prerequisite`,
             {
                 method: "POST",
                 headers: {
@@ -76,10 +72,8 @@ const ListUserModal = ({
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    user_id: user.id,
-                    course_id: course.course_id,
-                    course_year: course.course_year,
-                    course_semester: course.course_semester,
+                    course_id: course.course_name,
+                    prerequisite_id: subject.prerequisite_id,
                 }),
             }
         );
@@ -92,10 +86,7 @@ const ListUserModal = ({
         }
 
         messageApi.success("Xóa thành công");
-        if (setReFetch) {
-            setReFetch(true);
-        }
-        setUsers(users.filter((u: IUser) => u.id !== user.id));
+        setSubjects(subjects.filter((s) => s.prerequisite_id !== subject.prerequisite_id));
     }
 
 
@@ -125,7 +116,7 @@ const ListUserModal = ({
 
     const getColumnSearchProps = (
         dataIndex: DataIndex
-    ): TableColumnType<IUser> => ({
+    ): TableColumnType<IPrerequisite> => ({
         filterDropdown: ({
             setSelectedKeys,
             selectedKeys,
@@ -235,41 +226,31 @@ const ListUserModal = ({
 
     const columns = [
         {
-            title: "Username",
-            dataIndex: "username",
-            key: "username",
-            render: (text: string) => (
-                <span className="text-blue-300 font-semibold">{text}</span>
-            ),
-            ...getColumnSearchProps("username"),
+            title: "Môn tiên quyết",
+            dataIndex: "prerequisite_id",
+            key: "prerrequisite_id",
+
+            ...getColumnSearchProps("prerequisite_id"),
         },
         {
-            title: "Họ và tên",
-            dataIndex: "userFullname",
-            key: "userFullname",
-            ...getColumnSearchProps("userFullname"),
-        },
-        {
-            title: "Email",
-            dataIndex: "email",
-            key: "email",
-            ...getColumnSearchProps("email"),
+            title: "Tên môn học",
+            dataIndex: "course_fullname",
+            key: "course_fullname",
+            ...getColumnSearchProps("course_fullname"),
         },
         {
             title: "Action",
             key: "action",
-            render: (text: string, record: IUser) => (
+            render: (text: string, record: IPrerequisite) => (
                 <Popconfirm
-                    title="Bạn có chắc muốn xóa?"
+                    title="Bạn có chắc chắn muốn xóa môn tiên quyết này không?"
                     onConfirm={() => handleDelete(record)}
                     okText="Có"
                     cancelText="Không"
                 >
-                    <Button
-                        type="primary"
-                        danger
-                        icon={<Trash2 size={20} />}
-                    />
+                    <Button type="primary" danger>
+                        <Trash2 size={16} />
+                    </Button>
                 </Popconfirm>
             ),
         }
@@ -288,10 +269,11 @@ const ListUserModal = ({
                 open={isModelOpen}
                 onOk={handleCloseModel}
                 onCancel={handleCloseModel}
-            >
+            >   
+                <h1 className="text-center text-2xl font-bold">Danh sách môn tiên quyết</h1>
                 <Table
                     columns={columns}
-                    dataSource={users}
+                    dataSource={subjects}
                     loading={loading}
                     rowKey="id"
                     pagination={{ pageSize: 10 }}
@@ -301,4 +283,4 @@ const ListUserModal = ({
     );
 };
 
-export default ListUserModal;
+export default ListPrerequisite;

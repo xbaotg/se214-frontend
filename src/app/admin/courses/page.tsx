@@ -25,6 +25,7 @@ import {
     ITeacher,
     IDepartment,
     UserRoles,
+    ListSubjectResponse,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
@@ -64,17 +65,24 @@ const AdminCoursesPage = () => {
         }[]
     >([]);
 
+    const [courseOptions, setCourseOptions] = useState<
+        {
+            value: string;
+            label: string;
+        }[]
+    >([]);
+
     const updatedCourses = (courses: ICourse[]) => {
         setCourses(courses);
     };
 
     const [courseCreateForm, setCourseCreateForm] =
         useState<CreateCourseFormValues>({
-            course_code: "",
+            // course_code: "",
             course_id: "",
             course_teacher_id: null,
             course_department: null,
-            course_name: "",
+            course_name: null,
             course_fullname: "",
             course_credit: null,
             course_year: new Date().getFullYear(),
@@ -89,11 +97,11 @@ const AdminCoursesPage = () => {
 
     const resetCreateCourseForm = () => {
         setCourseCreateForm({
-            course_code: "",
+            // course_code: "",
             course_id: "",
             course_teacher_id: null,
             course_department: null,
-            course_name: "",
+            course_name: null,
             course_fullname: "",
             course_credit: null,
             course_year: new Date().getFullYear(),
@@ -114,6 +122,7 @@ const AdminCoursesPage = () => {
                     response_fetch_courses,
                     response_fetch_teachers,
                     response_fetch_dapartments,
+                    response_fetch_subjects,
                 ] = await Promise.all([
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/list`, {
                         method: "GET",
@@ -142,6 +151,13 @@ const AdminCoursesPage = () => {
                             },
                         }
                     ),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/subject/list`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }),
                 ]);
                 if (!response_fetch_courses.ok) {
                     message.error("Failed to fetch courses");
@@ -151,6 +167,9 @@ const AdminCoursesPage = () => {
                 }
                 if (!response_fetch_dapartments.ok) {
                     message.error("Failed to fetch departments");
+                }
+                if (!response_fetch_subjects.ok) {
+                    message.error("Failed to fetch subjects");
                 }
                 const response_fetch_courses_data: IApiResponse<
                     ICourseResponse[]
@@ -201,10 +220,22 @@ const AdminCoursesPage = () => {
                         label: department.department_name,
                     }));
 
+                const response_fetch_subjects_data: IApiResponse<
+                    ListSubjectResponse[]
+                > = await response_fetch_subjects.json();
+
+                const fetch_subjects = response_fetch_subjects_data.data.map(
+                    (subject) => ({
+                        value: subject.course_fullname,
+                        label: subject.course_name,
+                    })
+                );
+
                 messageApi.success({
                     content: "Lấy thông tin thành công.",
                     duration: 1,
                 });
+                setCourseOptions(fetch_subjects);
                 setTeacherOptions(fetch_teachers);
                 setDepartmentOptions(fetch_departments);
                 setCourses(fetch_courses);
@@ -408,6 +439,7 @@ const AdminCoursesPage = () => {
                                 teacherOptions={teacherOptions}
                                 lessionOptions={lessionOptions}
                                 semesterOptions={semesterOptions}
+                                courseOptions={courseOptions}
                                 token={token as string}
                             />
                         </div>
@@ -509,7 +541,7 @@ const AdminCoursesPage = () => {
                 });
 
                 setCourseCreateForm({
-                    course_code: "",
+                    // course_code: "",
                     course_id: "",
                     course_teacher_id: "",
                     course_department: "",
@@ -599,6 +631,17 @@ const AdminCoursesPage = () => {
         }
     };
 
+    const handleCourseNameChange = (value: string) => {
+        const course = courseOptions.find((course) => course.value === value);
+        if (course) {
+            setCourseCreateForm((prev) => ({
+                ...prev,
+                course_fullname: course.value,
+                course_name: course.label,
+            }));
+        }
+    };
+
     const modalContent = (
         <>
             <div className="p-4">
@@ -607,28 +650,29 @@ const AdminCoursesPage = () => {
                         <span className="flex text-blue-400 font-semibold text-lg justify-center">
                             Thông Tin Môn Học
                         </span>
-                        <Input
-                            size="middle"
+                        <Select
+                            showSearch
+                            optionFilterProp="label"
+                            size={"middle"}
                             placeholder="Mã môn"
                             value={courseCreateForm.course_name}
-                            onChange={(e) => {
-                                setCourseCreateForm((prev) => ({
-                                    ...prev,
-                                    course_name: e.target.value,
-                                }));
+                            onChange={(value) => {
+                                handleCourseNameChange(value);
                             }}
-                            style={{ marginTop: "1rem" }}
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                            }}
+                            options={courseOptions}
                         />
                         <Input
+                            disabled
                             size="middle"
                             placeholder="Tên môn"
-                            value={courseCreateForm.course_fullname}
-                            onChange={(e) => {
-                                setCourseCreateForm((prev) => ({
-                                    ...prev,
-                                    course_fullname: e.target.value,
-                                }));
-                            }}
+                            value={
+                                courseCreateForm.course_fullname
+                            }
+                          
                             style={{ marginTop: "1rem" }}
                         />
                         <Select

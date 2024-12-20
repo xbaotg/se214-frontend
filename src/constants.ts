@@ -8,8 +8,12 @@ export const adminNavItems = [
     path: "/admin/departments",
   },
   {
-    name: "Quản lý môn học",
+    name: "Quản lý khóa học",
     path: "/admin/courses",
+  },
+  {
+    name: "Quản lý môn học",
+    path: "/admin/subjects",
   },
   {
     name: "Duyệt đăng kí lớp",

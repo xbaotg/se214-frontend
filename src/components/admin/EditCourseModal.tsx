@@ -12,6 +12,7 @@ const EditCourseModal = ({
     teacherOptions,
     lessionOptions,
     semesterOptions,
+    courseOptions,
     setCourses,
     token,
 }: {
@@ -34,6 +35,10 @@ const EditCourseModal = ({
         value: number;
         label: string;
     }[];
+    courseOptions: {
+        value: string;
+        label: string;
+    }[];
     setCourses: (courses: ICourse[]) => void;
     token: string;
 }) => {
@@ -42,7 +47,7 @@ const EditCourseModal = ({
 
     const [courseUpdateForm, setCourseUpdateForm] =
         useState<CreateCourseFormValues>({
-            course_code: course.course_code || "",
+            // course_code: course.course_code || "",
             course_id: course.course_id,
             course_teacher_id: course.course_teacher_id || null,
             course_department: course.course_department || "",
@@ -111,6 +116,16 @@ const EditCourseModal = ({
         setIsModalOpen(false);
     };
 
+    const handleCourseNameChange = (value: string) => {
+        const course = courseOptions.find((course) => course.value === value);
+        if (course) {
+            setCourseUpdateForm((prev) => ({
+                ...prev,
+                course_fullname: course.value,
+                course_name: course.label,
+            }));
+        }
+    };
     return (
         <div>
             {contextHolder}
@@ -127,30 +142,31 @@ const EditCourseModal = ({
                             <span className="flex text-blue-400 font-semibold text-lg justify-center">
                                 Cập nhật thông tin
                             </span>
-                            <Input
-                                size="middle"
-                                placeholder="Mã môn"
-                                value={courseUpdateForm.course_name}
-                                onChange={(e) => {
-                                    setCourseUpdateForm((prev) => ({
-                                        ...prev,
-                                        course_name: e.target.value,
-                                    }));
-                                }}
-                                style={{ marginTop: "1rem" }}
-                            />
-                            <Input
-                                size="middle"
-                                placeholder="Tên môn"
-                                value={courseUpdateForm.course_fullname}
-                                onChange={(e) => {
-                                    setCourseUpdateForm((prev) => ({
-                                        ...prev,
-                                        course_fullname: e.target.value,
-                                    }));
-                                }}
-                                style={{ marginTop: "1rem" }}
-                            />
+                        <Select
+                            showSearch
+                            optionFilterProp="label"
+                            size={"middle"}
+                            placeholder="Mã môn"
+                            value={courseUpdateForm.course_name}
+                            onChange={(value) => {
+                                handleCourseNameChange(value);
+                            }}
+                            style={{
+                                width: "100%",
+                                marginTop: "1rem",
+                            }}
+                            options={courseOptions}
+                        />
+                        <Input
+                            disabled
+                            size="middle"
+                            placeholder="Tên môn"
+                            value={
+                                courseUpdateForm.course_fullname
+                            }
+                          
+                            style={{ marginTop: "1rem" }}
+                        />
                             <Select
                                 size={"middle"}
                                 placeholder="Khoa"

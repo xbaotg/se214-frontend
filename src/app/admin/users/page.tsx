@@ -79,6 +79,39 @@ const AdminUserPage = () => {
         fetchTeachers();
     }, [messageApi, token]);
 
+    const fetchUpdateRole = async (record: IUser, role: string) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/user/update`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        id: record.id,
+                        user_role: role,
+                        user_fullname: record.userFullname,
+                        year: record.year,
+                    }),
+                }
+            );
+            // const data: IApiResponse<IListUserResponse[]> = await response.json();
+            if (response.ok) {
+                messageApi.success({
+                    content: "Cập nhật quyền người dùng thành công",
+                    duration: 1,
+                });
+            } else {
+                message.error("Cập nhật quyền người dùng không thành công");
+            }
+        } catch (error) {
+            console.error("Failed to update user role: ", error);
+            message.error("Cập nhật quyền người dùng không thành công");
+        }
+    };
+
     const handleSearch = (
         selectedKeys: string[],
         confirm: FilterDropdownProps["confirm"],
@@ -277,10 +310,14 @@ const AdminUserPage = () => {
             dataIndex: "userRole",
             key: "userRole",
             ...getColumnSearchSelectProps("userRole"),
-            render: (text: string) => (
+            render: (text: string, record: IUser) => (
                 <Select
                     defaultValue={text}
                     style={{ width: 120 }}
+                    onChange={(value) => fetchUpdateRole(
+                        users.find((user) => user.id === record.id) as IUser,
+                        value as string
+                    )}
                     options={[
                         { label: "Giảng viên", value: UserRoles.Lecturer },
                         { label: "Sinh viên", value: UserRoles.User },

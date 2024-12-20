@@ -43,16 +43,15 @@ const DKHPPage = () => {
     const [departments, setDepartments] = useState<IDepartmentFilter[]>([]);
     const [loadingPage, setLoadingPage] = useState(true);
     const [loading, setLoading] = useState(false);
+    const [reFetch, setReFetch] = useState(false);
 
     const start = async () => {
         setLoading(true);
         const selectedCourses = selectedRowKeys.map((course_id) =>
             getCourseByKey(course_id as string)
         );
-        const unSelectedCourses = alreadyRegisteredCourses
-            .map((course_id) => getCourseByKey(course_id as string))
-            .filter((course) => !selectedCourses.includes(course));
         try {
+            let len = 0;
             const response = await Promise.all(
                 selectedCourses.map((course) => {
                     if (!course) return;
@@ -60,6 +59,7 @@ const DKHPPage = () => {
                         messageApi.info(
                             `Course ${course.course_name} already registered`
                         );
+                        len+=1;
                         return false;
                     }
                     return fetch(
@@ -80,177 +80,55 @@ const DKHPPage = () => {
                 })
             );
 
-            const unSubResponse = await Promise.all(
-                unSelectedCourses.map((course) => {
-                    if (!course) return;
-                    if (!alreadyRegisteredCourses.includes(course.course_id)) {
-                        messageApi.info(
-                            `Course ${course.course_name} not registered`
-                        );
-                        return;
-                    }
-                    // messageApi.info(`Unregister course ${course.course_name}`);
-                    return fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/user/course/unregister`,
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
-                            },
-                            body: JSON.stringify({
-                                course_id: course.course_id,
-                                course_year: course.course_year,
-                                course_semester: course.course_semester,
-                            }),
-                        }
-                    );
-                })
+            const res: IApiResponse<null>[] = await Promise.all(
+                response.map((res) => res ? res.json() : null)
             );
 
-            const unSubResults = unSubResponse.map((res) => {
-                return res?.ok;
-            });
-            // // console.log("unSubResults: ", unSubResults);
-            const unSubSuccessfulIndexes = unSubResults.map((result, index) =>
-                result ? index : -1
+            const successfulRequests = res.filter(
+                (r) => r !== null 
             );
 
-            const unSubUnSuccessfulIndexes = unSubResults.map((result, index) =>
-                result ? -1 : index
+            const successfulIndex = res.map(
+                (r, index) => r !== null ? index : -1
+            ).filter((index) => index !== -1);
+
+            const course = selectedCourses.filter(
+                (_, index) => successfulIndex.includes(index)
             );
 
-            const unSubSuccessfulCourses = unSubSuccessfulIndexes.map(
-                (index) => unSelectedCourses[index]
-            );
-
-            const unSubUnSuccessfulCourses = unSubUnSuccessfulIndexes.map(
-                (index) => unSelectedCourses[index]
-            );
-
-            unSubSuccessfulCourses.forEach((course) => {
-                const index = courses.findIndex(
-                    (c) => c.course_id === course?.course_id
-                );
-                if (index !== -1) {
-                    messageApi.success(
-                        `Unregister course ${course?.course_name} successfully`
-                    );
-                    courses[index].course_size = `${
-                        parseInt(course?.course_size.split("/")[0] || "0") - 1
-                    }/${parseInt(course?.course_size.split("/")[1] || "0")}`;
-                    setAlreadyRegisteredCourses(
-                        (keys) => keys.filter((key) => key !== courses[index].course_id)
-                    );
-                } 
-            });
-
-            unSubUnSuccessfulCourses.forEach((course) => {
-                const index = courses.findIndex(
-                    (c) => c.course_id === course?.course_id
-                );
-                if (index !== -1) {
+            successfulRequests.map((res,i) => {
+                if (res.status) {
+                    messageApi.success("Đăng ký thành công");
+                    len+=1;
+                } else {
                     messageApi.error(
-                        `Failed to unregister course ${course?.course_name}`
+                        `Đăng ký môn ${course[i] ? course[i].course_name : ""} thất bại: ${res.message}`
                     );
-
-                    setSelectedRowKeys(prev => 
-                    [...prev, courses[index].course_id]
-                    );
-
+                    setSelectedRowKeys(selectedRowKeys.filter((_, index) => !successfulIndex.includes(index)));
                 }
             });
-
-            // // Count number of successful requests
-            const results = response.map((res) => {
-                if (!res) return true;
-                return res?.ok;
-            });
-
-            const successfulIndexes = results.map((result, index) => {
-                return result ? index : -1;
-            });
-
-            const unSuccessfulIndexes = results.map((result, index) => {
-                return result ? -1 : index;
-            });
-
-            const successfulCourses = successfulIndexes.map(
-                (index) => selectedCourses[index]
-            );
-
-            const unSuccessfulCourses = unSuccessfulIndexes.map(
-                (index) => selectedCourses[index]
-            );
-
-
-            unSuccessfulCourses.forEach((course) => {
-                const index = courses.findIndex(
-                    (c) => c.course_id === course?.course_id
-                );
-                console.log("index: ", index);
-                if (index !== -1) {
-                    messageApi.error(
-                        `Failed to register course ${course?.course_name}`
-                    );
-                    setSelectedRowKeys((keys) => 
-                        keys.filter((key) => key !== courses[index].course_id)
-                    );
-                }
-            });
-
-            successfulCourses.forEach((course) => {
-                const index = courses.findIndex(
-                    (c) => c.course_id === course?.course_id
-                );
-                if (index !== -1) {
-                    if (alreadyRegisteredCourses.includes(courses[index].course_id)) {
-                        return;
-                    }
-                    messageApi.success(
-                        `Register course ${course?.course_name} successfully`
-                    );
-                    courses[index].course_size = `${
-                        parseInt(course?.course_size.split("/")[0] || "0") + 1
-                    }/${parseInt(course?.course_size.split("/")[1] || "0")}`;
-                    // setSelectedRowKeys((keys) =>
-                    //     keys.filter((key) => key !== course?.course_id)
-                    // );
-                    // console.log(alreadyRegisteredCourses, courses[index].course_id);
-                    setAlreadyRegisteredCourses(prev => 
-                        [...prev, courses[index].course_id]
-                    );
-                }
-            });
-
-            const successfulRequests = results.filter(
-                (result) => result
-            ).length;
 
             messageApi.success(
-                `Đăng ký thành công ${successfulRequests} học phần.`
+                `Đăng ký thành công ${len} học phần.`
             );
 
             setCourses([...courses]);
-            // setAlreadyRegisteredCourses(
-            //     selectedRowKeys.filter(
-            //         (key) =>
-            //             !unSuccessfulCourses.includes(
-            //                 getCourseByKey(key as string)
-            //             )
-            //     )
-            // );
-            // setSelectedRowKeys([...selectedRowKeys]);
+
         } catch (error) {
             console.error("Failed to register courses: ", error);
             messageApi.error("Đăng ký thất bại !!!");
         } finally {
             setLoading(false);
         }
+        setReFetch(true);
     };
 
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
         console.log("selectedRowKeys changed: ", newSelectedRowKeys);
+        const unSelectRowKeys = selectedRowKeys.filter(
+            (key) => !newSelectedRowKeys.includes(key)
+        );
+        newSelectedRowKeys = newSelectedRowKeys.concat(unSelectRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
     };
 
@@ -265,6 +143,9 @@ const DKHPPage = () => {
             router.push("/login");
             return;
         }
+    }, [token, router]);
+
+    useEffect(() => {
         const fetchData = async () => {
             try {
                 const [
@@ -291,7 +172,7 @@ const DKHPPage = () => {
                     ),
                     // BCK code this for registered courses [
                     fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=2024&course_semester=1`,
+                        `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=${process.env.NEXT_PUBLIC_CURRENT_YEAR}&course_semester=${process.env.NEXT_PUBLIC_CURRENT_SEMESTER}`,
                         {
                             method: "GET",
                             headers: {
@@ -376,8 +257,10 @@ const DKHPPage = () => {
                 setLoadingPage(false);
             }
         };
+
         fetchData();
-    }, [messageApi, token, router]);
+        setReFetch(false);
+    }, [messageApi, token, router, reFetch]);
 
     const getDepartmentName = (department_id: string | undefined) => {
         if (!department_id) return "";

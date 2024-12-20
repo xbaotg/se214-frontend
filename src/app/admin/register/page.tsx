@@ -13,6 +13,7 @@ import {
     ITeacher,
     IDepartment,
     UserRoles,
+    ListSubjectResponse,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import { Trash2, PenLine, Check } from "lucide-react";
@@ -46,6 +47,13 @@ const RegistingCoursesPage = () => {
             label: string;
         }[]
     >([]);
+    const [courseOptions, setCourseOptions] = useState<
+        {
+            value: string;
+            label: string;
+        }[]
+    >([]);
+
 
     const updatedCourses = (courses: ICourse[]) => {
         setCourses(courses);
@@ -58,6 +66,7 @@ const RegistingCoursesPage = () => {
                     response_fetch_courses,
                     response_fetch_teachers,
                     response_fetch_dapartments,
+                    response_fetch_subjects,
                 ] = await Promise.all([
                     fetch(
                         `${process.env.NEXT_PUBLIC_API_URL}/lecturer/course/register/list`,
@@ -89,6 +98,13 @@ const RegistingCoursesPage = () => {
                             },
                         }
                     ),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/subject/list`, {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }),
                 ]);
                 if (!response_fetch_courses.ok) {
                     message.error("Failed to fetch courses");
@@ -98,6 +114,9 @@ const RegistingCoursesPage = () => {
                 }
                 if (!response_fetch_dapartments.ok) {
                     message.error("Failed to fetch departments");
+                }
+                if (!response_fetch_subjects.ok) {
+                    message.error("Failed to fetch subjects");
                 }
                 const response_fetch_courses_data: IApiResponse<
                     ICourseResponse[]
@@ -146,10 +165,21 @@ const RegistingCoursesPage = () => {
                         label: department.department_name,
                     }));
 
+                const response_fetch_subjects_data: IApiResponse<
+                    ListSubjectResponse[]
+                > = await response_fetch_subjects.json();
+
+                const fetch_subjects = response_fetch_subjects_data.data.map(
+                    (subject) => ({
+                        value: subject.course_fullname,
+                        label: subject.course_name,
+                    })
+                );
                 messageApi.success({
                     content: "Lấy thông tin thành công.",
                     duration: 1,
                 });
+                setCourseOptions(fetch_subjects);
                 setTeacherOptions(fetch_teachers);
                 setDepartmentOptions(fetch_departments);
                 setCourses(fetch_courses);
@@ -352,6 +382,7 @@ const RegistingCoursesPage = () => {
                                 teacherOptions={teacherOptions}
                                 lessionOptions={lessionOptions}
                                 semesterOptions={semesterOptions}
+                                courseOptions={courseOptions}
                                 token={token as string}
                             />
                         </div>
