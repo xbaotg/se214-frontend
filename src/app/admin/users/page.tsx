@@ -3,7 +3,7 @@
 import { SearchOutlined } from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Form, InputNumber, Select } from "antd";
+import { message, Table, Button, Input, Space, Form, InputNumber, Select, Popconfirm} from "antd";
 import type { InputRef, TableColumnType, FormProps } from "antd";
 
 import {
@@ -13,13 +13,15 @@ import {
     UserRoles,
     ISignUpFormValues,
     IUser,
+    IUpdateUserFormValues,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { Plus } from "lucide-react";
+import { PenLine, Plus, Trash2 } from "lucide-react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
+import EditUserModal from "@/components/admin/EditUserModal";
 
 type DataIndex = keyof IUser;
 
@@ -32,7 +34,9 @@ const AdminUserPage = () => {
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
     const [open, setOpen] = useState<boolean>(false);
+    const [openEdit, setOpenEdit] = useState<boolean>(false);
     const [form] = Form.useForm();
+    const [editForm] = Form.useForm();
 
     useEffect(() => {
         const fetchTeachers = async () => {
@@ -109,6 +113,34 @@ const AdminUserPage = () => {
         } catch (error) {
             console.error("Failed to update user role: ", error);
             message.error("Cập nhật quyền người dùng không thành công");
+        }
+    };
+
+    const fetchDeleteUser = async (record: IUser) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/user/delete?id=${record.id}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            // const data: IApiResponse<IListUserResponse[]> = await response.json();
+            if (response.ok) {
+                messageApi.success({
+                    content: "Xóa người dùng thành công",
+                    duration: 1,
+                });
+                setUsers(users.filter((user) => user.id !== record.id));
+            } else {
+                message.error("Xóa người dùng không thành công");
+            }
+        } catch (error) {
+            console.error("Failed to delete user: ", error);
+            message.error("Xóa người dùng không thành công");
         }
     };
 
@@ -282,7 +314,112 @@ const AdminUserPage = () => {
                 : false,
         });
                         
+    const formEditItems = (
+        <>
+            <Form.Item
+                label="Họ tên"
+                name="user_fullname"
+                rules={[
+                    {
+                        required: true,
+                        message: "Please input your username!",
+                    },
+                ]}
+            >
+                <Input />
+            </Form.Item>
 
+            <Form.Item
+                label="Year"
+                name="year"
+                rules={[
+                    {
+                        required: true,
+                        message: "Please input your year!",
+                    },
+                ]}
+            >
+                <InputNumber max={new Date().getFullYear()} />
+            </Form.Item>
+
+            <Form.Item
+                label="Quyền"
+                name="user_role"
+                // initialValue={UserRoles.Lecturer}
+                rules={[
+                    {
+                        required: true,
+                        message: "Please input your role!",
+                    },
+                ]}
+
+            >
+                <Select>
+                    <Select.Option value={UserRoles.Lecturer}>
+                        Giảng viên
+                    </Select.Option>
+                    <Select.Option value={UserRoles.User}>Sinh viên</Select.Option>
+                    <Select.Option value={UserRoles.Admin}>Admin</Select.Option>
+                </Select>
+            </Form.Item>
+        </>    
+    );
+
+    const onFinishEdit: FormProps["onFinish"] = async (
+        values: IUpdateUserFormValues
+    ) => {
+        const {
+            user_fullname,
+            year,
+            user_role,
+        } = values;
+
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/user/update`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        id: users[0].id,
+                        user_role: user_role,
+                        user_fullname: user_fullname,
+                        year: year,
+                    }),
+                }
+            );
+            if (response.ok) {
+                messageApi.success({
+                    content: "Cập nhật thông tin người dùng thành công",
+                    duration: 1,
+                });
+                setOpenEdit(false);
+                setUsers((prev) => [
+                    {
+                        ...prev[0],
+                        userFullname: user_fullname,
+                        year: year,
+                        userRole: user_role,
+                    },
+                    ...prev.slice(1),
+                ]);
+            } else {
+                message.error("Cập nhật thông tin người dùng không thành công");
+            }
+        } catch (error) {
+            console.error("Failed to update user: ", error);
+            message.error("Cập nhật thông tin người dùng không thành công");
+        }
+    };
+
+    const onFinishFailedEdit: FormProps["onFinishFailed"] = (errorInfo) => {
+        console.log("Failed:", errorInfo);
+    };
+
+        
     const columns = [
         {
             title: "Username",
@@ -331,23 +468,41 @@ const AdminUserPage = () => {
             dataIndex: "year",
             key: "year",
         },
-        // {
-        //     title: "Thao tác",
-        //     key: "action",
-        //     render: (text: string, record: ITeacher) => (
-        //         <Space size="large">
-        //             <div className="cursor-pointer">
-        //                 <EditTeacherModal
-        //                     icon={<PenLine size={16} />}
-        //                     teacher={record}
-        //                     allTeachers={users}
-        //                     setUsers={setUsers}
-        //                     token={token as string}
-        //                 />
-        //             </div>
-        //         </Space>
-        //     ),
-        // },
+        {
+            title: "Thao tác",
+            key: "action",
+            render: (text: string, record: IUser) => (
+                <Space size="large">
+                    <div className="flex gap-4">
+                        <div className="cursor-pointer">
+                            <Popconfirm
+                                title="Bạn có chắc chắn muốn xóa người dùng này không?"
+                                onConfirm={() => fetchDeleteUser(record)}
+                                okText="Có"
+                                cancelText="Không"
+                            > 
+                                <Trash2 size={16} color={"red"}/>
+                            </Popconfirm>
+                        </div>
+                        <div className="cursor-pointer">
+                            <PenLine 
+                                size={16} 
+                                onClick={() => {
+                                    editForm.setFieldsValue({
+                                        username: record.username,
+                                        user_fullname: record.userFullname,
+                                        email: record.email,
+                                        year: record.year,
+                                        user_role: record.userRole,
+                                    });
+                                    setOpenEdit(true);
+                                }}
+                            />
+                        </div>
+                    </div>
+                </Space>
+            ),
+        },
     ];
 
     const successMessage = ({
@@ -608,6 +763,18 @@ const AdminUserPage = () => {
                     submitButtonContent="Đăng ký người dùng"
                 />
             </div>
+            <EditUserModal
+                open={openEdit}
+                setOpen={setOpenEdit}
+                onFinish={onFinishEdit}
+                form={editForm}
+                onFinishFailed={onFinishFailedEdit}
+                buttonIcon={<Plus size={16} />}
+                buttonContent="Thêm người dùng"
+                formTitle="Thêm người dùng mới"
+                formItems={formEditItems}
+                submitButtonContent="Cập nhật người dùng"
+            />           
             <Table<IUser> dataSource={users} columns={columns} />
         </div>
     );

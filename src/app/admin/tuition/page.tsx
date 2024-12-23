@@ -3,7 +3,7 @@
 import { DollarCircleOutlined, MoneyCollectTwoTone, SearchOutlined } from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Modal, DatePicker } from "antd";
+import { message, Table, Button, Input, Space, Modal, DatePicker, Popconfirm } from "antd";
 import { InputRef, TableColumnType,  Divider } from "antd";
 
 import {
@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
 import PayTuitionModal from "@/components/admin/TuitionModal";
 import TypedInputNumber from "antd/es/input-number";
+import { Trash2 } from "lucide-react";
 
 type DataIndex = keyof ITuition;
 
@@ -115,6 +116,34 @@ const TuitionPage = () => {
         } catch (error) {
             console.error("Failed to create tuition", error);
             message.error("Tạo học phí không thành công");
+        }
+    };
+
+    const fetchDeleteTuition = async (tuitionID: string) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/tuition/delete?id=${tuitionID}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            const data: IApiResponse<ITuitionResponse> = await response.json();
+            if (response.ok) {
+                messageApi.success({
+                    content: "Xóa học phí thành công",
+                    duration: 1,
+                });
+                setTuitions(tuitions.filter((tuition) => tuition.id !== tuitionID));
+            } else {
+                message.error("Xóa học phí không thành công: " + data.message);
+            }
+        } catch (error) {
+            console.error("Failed to delete tuition", error);
+            message.error("Xóa học phí không thành công");
         }
     }
 
@@ -308,14 +337,26 @@ const TuitionPage = () => {
             key: "action",
             render: (text: string, record: ITuition) => (
                 <Space size="large">
-                    <div className="cursor-pointer">
-                        <PayTuitionModal
-                            icon={<DollarCircleOutlined size={16} />}
-                            tuition={record}
-                            allTuition={tuitions}
-                            setTuitions={setTuitions}
-                            token={token as string}
-                        />
+                    <div className="flex gap-4">
+                        <div className="cursor-pointer">
+                            <PayTuitionModal
+                                icon={<DollarCircleOutlined size={16} />}
+                                tuition={record}
+                                allTuition={tuitions}
+                                setTuitions={setTuitions}
+                                token={token as string}
+                            />
+                        </div>
+                        <div className="cursor-pointer">
+                            <Popconfirm
+                                title="Bạn có chắc muốn xóa học phí này?"
+                                onConfirm={() => fetchDeleteTuition(record.id)}
+                                okText="Có"
+                                cancelText="Không"
+                            > 
+                                <Trash2 size={16} color={"red"}/>
+                            </Popconfirm>
+                        </div>
                     </div>
                 </Space>
             ),

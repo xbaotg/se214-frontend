@@ -342,3 +342,15 @@ export interface IStatsResponse {
   total_course_request: number;
   total_money: number;
 }
+
+// {
+//   "id": "string",
+//   "user_fullname": "string",
+//   "user_role": "admin",
+//   "year": 0
+// }
+export interface IUpdateUserFormValues {
+  user_fullname: string;
+  year: number;
+  user_role: UserRoles;
+}

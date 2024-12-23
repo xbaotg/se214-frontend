@@ -28,7 +28,7 @@ import Highlighter from "react-highlight-words";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
-import { ArrowDownWideNarrow, NotebookText, Trash2 } from "lucide-react";
+import { ArrowDownWideNarrow, NotebookText, PenLine, Trash2 } from "lucide-react";
 import ListPrerequisite from "@/components/admin/PrerequisiteModal";
 
 type DataIndex = keyof ISubject;
@@ -49,6 +49,7 @@ const AdminCoursesPage = () => {
     const [messageApi, contextHolder] = message.useMessage();
     const [reFetch, setReFetch] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
+    const [isUpdateOpen, setIsUpdateOpen] = useState<boolean>(false);
     const [isPrequisiteModalOpen, setIsPrequisiteModalOpen] = useState<boolean>(false);
     const [subject, setSubject] = useState<ISubject>({
         course_name: "",
@@ -337,6 +338,19 @@ const AdminCoursesPage = () => {
                                 setReFetch={setReFetch}
                             />
                         </div>
+                        <div className="cursor-pointer">
+                            <PenLine
+                                size={16}
+                                onClick={() => {
+                                    form.setFieldsValue({
+                                        course_name: record.course_name,
+                                        course_fullname: record.course_fullname,
+                                        department_code: record.department_code,
+                                    });
+                                    setIsUpdateOpen(true);
+                                }}
+                            />
+                        </div>
                     </div>
                 </Space>
             ),
@@ -379,6 +393,7 @@ const AdminCoursesPage = () => {
 
             setReFetch(true);
             setIsOpen(false);
+            setIsUpdateOpen(false);
             resetCreateCourseForm();
         } catch (error) {
             console.error("Failed to create subject: ", error);
@@ -422,6 +437,63 @@ const AdminCoursesPage = () => {
                                     ]}
                                 >
                                     <Input/>
+                                </Form.Item>
+
+                                <Form.Item
+                                    label="Tên môn"
+                                    name="course_fullname"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: "Tên môn không được để trống",
+                                        },
+                                    ]}
+                                >
+                                    <Input/>
+                                </Form.Item>
+                                </>
+                            </Form>
+                        </div>
+                    </div>
+            </Modal>    
+        )};
+
+    const SubjectUpdateModal = () => {
+        return (
+            <Modal
+                title="Cập nhật môn học"
+                open={isUpdateOpen}
+                onCancel={() => {
+                    setIsUpdateOpen(false);
+                    resetCreateCourseForm();
+                }}
+                onOk={
+                   form.submit
+                }
+                okText="Tạo"
+                cancelText="Hủy"
+            >
+                    <div className="p-4">
+                        <div className="mb-4">
+                            
+                            <Form
+                                name="basic"
+                                onFinish={handleCreateSubject}
+                                form={form}
+                                autoComplete="off"
+                                >
+                                <>
+                                <Form.Item
+                                    label="Mã môn"
+                                    name="course_name"
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: "Mã môn không được để trống",
+                                        },
+                                    ]}
+                                >
+                                    <Input disabled/>
                                 </Form.Item>
 
                                 <Form.Item
@@ -557,6 +629,7 @@ const AdminCoursesPage = () => {
 
             <SubjectCreateModal />
             <PrequisiteModal />
+            <SubjectUpdateModal />
      
             <Table<ISubject>
                 columns={columns}

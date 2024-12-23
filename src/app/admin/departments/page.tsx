@@ -3,13 +3,13 @@
 import { SearchOutlined } from "@ant-design/icons";
 import { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Form } from "antd";
+import { message, Table, Button, Input, Space, Form, Popconfirm } from "antd";
 import type { InputRef, TableColumnType, FormProps } from "antd";
 
 import { CreateDepartmentFormValues, IApiResponse, IDepartment } from "@/types";
 import Highlighter from "react-highlight-words";
 import AddModal from "@/components/admin/AddModal";
-import { PenLine, Plus } from "lucide-react";
+import { PenLine, Plus, Trash2 } from "lucide-react";
 import EditDepartmentModal from "@/components/admin/EditDepartmentModal";
 import { formatDate } from "@/utils";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -72,6 +72,43 @@ const AdminDepartmentPage = () => {
         };
         fetchDepartments();
     }, [messageApi, token]);
+
+    const fetchDelteDepartment = async (department: IDepartment) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/department/delete?department_code=${department.department_code}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            const data: IApiResponse<null> = await response.json();
+            if (response.ok) {
+                const new_departments = departments.filter(
+                    (dep) => dep.department_id !== department.department_id
+                );
+
+                setDepartments(new_departments);
+                messageApi.success({
+                    content: `Xóa khoa ${department.department_name} thành công.`,
+                    duration: 1,
+                });
+            } else {
+                messageApi.error({
+                    content: `Xóa khoa ${department.department_name} thất bại: ${data.message}`,
+                });
+            }
+        } catch (error) {
+            console.error("Failed to delete department: ", error);
+            messageApi.error({
+                content: `Xóa khoa ${department.department_name} thất bại.`,
+            });
+        }
+    }
 
     const updatedDepartments = (new_departments: IDepartment[]) => {
         setDepartments(new_departments);
@@ -233,14 +270,27 @@ const AdminDepartmentPage = () => {
             key: "action",
             render: (text: string, record: IDepartment) => (
                 <Space size="large">
-                    <div className="cursor-pointer">
-                        <EditDepartmentModal
-                            icon={<PenLine size={16} />}
-                            department={record}
-                            setDepartments={updatedDepartments}
-                            allDepartments={departments}
-                            token={token as string}
-                        />
+                    <div className="flex gap-4">
+                        <div className="cursor-pointer">
+                            <EditDepartmentModal
+                                icon={<PenLine size={16} />}
+                                department={record}
+                                setDepartments={updatedDepartments}
+                                allDepartments={departments}
+                                token={token as string}
+                            />
+                        </div>
+                        <div className="cursor-pointer">
+                            <Popconfirm
+                                title="Bạn có chắc chắn muốn xóa khoa này không?"
+                                onConfirm={() => fetchDelteDepartment(record)}
+                                okText="Có"
+                                cancelText="Không"
+                            > 
+                                <Trash2 size={16} color={"red"}/>
+                            </Popconfirm>
+                        </div>
+
                     </div>
                 </Space>
             ),
@@ -304,7 +354,7 @@ const AdminDepartmentPage = () => {
             if (result.ok) {
                 successMessage({
                     // content: `Department created successfully for ${data.data.department_name}`,
-                    content: "Thêm khoa ${data.data.department_name} thành công.",
+                    content: `Thêm khoa ${data.data.department_name} thành công.`,
                     duration: 1,
                 });
 
