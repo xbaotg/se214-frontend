@@ -160,16 +160,16 @@ const AdminCoursesPage = () => {
                     }),
                 ]);
                 if (!response_fetch_courses.ok) {
-                    message.error("Failed to fetch courses");
+                    message.error("Lấy thông tin khóa học thất bại");
                 }
                 if (!response_fetch_teachers.ok) {
-                    message.error("Failed to fetch teachers");
+                    message.error("Lấy thông tin giảng viên thất bại");
                 }
                 if (!response_fetch_dapartments.ok) {
-                    message.error("Failed to fetch departments");
+                    message.error("Lấy thông tin khoa thất bại");
                 }
                 if (!response_fetch_subjects.ok) {
-                    message.error("Failed to fetch subjects");
+                    message.error("Lấy thông tin môn học thất bại");
                 }
                 const response_fetch_courses_data: IApiResponse<
                     ICourseResponse[]
@@ -241,7 +241,7 @@ const AdminCoursesPage = () => {
                 setCourses(fetch_courses);
             } catch (error) {
                 console.error("Failed to fetch courses: ", error);
-                message.error("Failed to fetch courses");
+                message.error("Lấy thông tin thất bại");
             } finally {
                 setLoadingPage(false);
             }
@@ -536,7 +536,8 @@ const AdminCoursesPage = () => {
             const data: IApiResponse<ICourseResponse> = await result.json();
             if (result.ok) {
                 successMessage({
-                    content: `Courses created successfully for ${data.data.course_name}`,
+                    // content: `Courses created successfully for ${data.data.course_name}`,
+                    content: `Thêm môn học ${data.data.course_name} thành công.`,
                     duration: 1,
                 });
 
@@ -578,13 +579,13 @@ const AdminCoursesPage = () => {
                 ]);
             } else {
                 errorMessage({
-                    content: data.message || "An unexpected error occurred",
+                    content: data.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };
@@ -620,13 +621,13 @@ const AdminCoursesPage = () => {
                 );
             } else {
                 errorMessage({
-                    content: data.message || "An unexpected error occurred",
+                    content: data.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };

@@ -284,10 +284,11 @@ const ListUserModal = ({
             {contextHolder}
             <div onClick={handleOpenModel}>{icon}</div>
             <Modal
-                title={null}
+                title={`Danh sách học viên khóa học ${course.course_name}`}
                 open={isModelOpen}
                 onOk={handleCloseModel}
                 onCancel={handleCloseModel}
+                width={800}
             >
                 <Table
                     columns={columns}

@@ -567,13 +567,13 @@ const LecturerCoursesPage = () => {
                 ]);
             } else {
                 errorMessage({
-                    content: data.message || "An unexpected error occurred",
+                    content: data.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };
@@ -609,13 +609,13 @@ const LecturerCoursesPage = () => {
                 );
             } else {
                 errorMessage({
-                    content: data.message || "An unexpected error occurred",
+                    content: data.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };

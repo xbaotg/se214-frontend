@@ -87,13 +87,13 @@ const SignUp: React.FC = () => {
                 }, 1000);
             } else {
                 errorMessage({
-                    content: data.detail || "An unexpected error occurred",
+                    content: data.detail || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };

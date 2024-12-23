@@ -43,7 +43,6 @@ const DKHPPage = () => {
     const [departments, setDepartments] = useState<IDepartmentFilter[]>([]);
     const [loadingPage, setLoadingPage] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [reFetch, setReFetch] = useState(false);
 
     const start = async () => {
         setLoading(true);
@@ -113,6 +112,7 @@ const DKHPPage = () => {
             );
 
             setCourses([...courses]);
+            // setReFetch(true);
 
         } catch (error) {
             console.error("Failed to register courses: ", error);
@@ -120,7 +120,6 @@ const DKHPPage = () => {
         } finally {
             setLoading(false);
         }
-        setReFetch(true);
     };
 
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
@@ -259,8 +258,7 @@ const DKHPPage = () => {
         };
 
         fetchData();
-        setReFetch(false);
-    }, [messageApi, token, router, reFetch]);
+    }, [messageApi, token, router]);
 
     const getDepartmentName = (department_id: string | undefined) => {
         if (!department_id) return "";

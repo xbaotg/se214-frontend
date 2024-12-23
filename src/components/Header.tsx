@@ -71,12 +71,27 @@ const Header = ({
         }
     };
 
+    const handleHome = () => {
+        if (headerContent === "Admin") {
+            router.push("/admin");
+            return;
+        }
+        if (headerContent === "Lecturer") {
+            router.push("/lecturer/courses");
+            return;
+        }
+        if (headerContent === "User") {
+            router.push("/user");
+            return;
+        }
+    };
+
     return (
         <>
             {contextHolder}
             <header className="bg-white shadow-sm h-16">
                 <div className="container mx-auto px-4 h-full flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-4 cursor-pointer" onClick={handleHome}>
                         {icon}
                         <span className="font-bold text-xl">
                             {headerContent}

@@ -303,7 +303,8 @@ const AdminDepartmentPage = () => {
             const data: IApiResponse<IDepartment> = await result.json();
             if (result.ok) {
                 successMessage({
-                    content: `Department created successfully for ${data.data.department_name}`,
+                    // content: `Department created successfully for ${data.data.department_name}`,
+                    content: "Thêm khoa ${data.data.department_name} thành công.",
                     duration: 1,
                 });
 
@@ -321,13 +322,13 @@ const AdminDepartmentPage = () => {
                 ]);
             } else {
                 errorMessage({
-                    content: data.message || "An unexpected error occurred",
+                    content: data.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };

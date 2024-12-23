@@ -319,3 +319,26 @@ export interface ITuition {
   tuitionStatus: TuStatus;
   tuitionDeadline: string;
 }
+
+// {
+//     "total_users": 6,
+//     "total_teachers": 2,
+//     "total_students": 2,
+//     "total_courses": 3,
+//     "total_subjects": 5,
+//     "total_students_registered": 1,
+//     "total_student_paid": 0,
+//     "total_course_request": 0,
+//     "total_money": 0
+//   }
+export interface IStatsResponse {
+  total_users: number;
+  total_teachers: number;
+  total_students: number;
+  total_courses: number;
+  total_subjects: number;
+  total_students_registered: number;
+  total_student_paid: number;
+  total_course_request: number;
+  total_money: number;
+}

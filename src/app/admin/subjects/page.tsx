@@ -104,6 +104,7 @@ const AdminCoursesPage = () => {
                 setSubjects(fetch_subjects);
             } catch (error) {
                 console.error("Failed to fetch courses: ", error);
+                // message.error("Failed to fetch courses");
                 message.error("Failed to fetch courses");
             } finally {
                 setLoadingPage(false);
@@ -533,7 +534,7 @@ const AdminCoursesPage = () => {
         if (response.ok) {
             messageApi.success("Added prerequisite successfully");
         } else {
-            messageApi.error(data.message || "An unexpected error occurred");
+            messageApi.error(data.message || "Lỗi không xác định");
         }
     };
 

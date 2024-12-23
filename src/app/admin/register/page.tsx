@@ -185,7 +185,8 @@ const RegistingCoursesPage = () => {
                 setCourses(fetch_courses);
             } catch (error) {
                 console.error("Failed to fetch courses: ", error);
-                message.error("Failed to fetch courses");
+                // message.error("Failed to fetch courses");
+                message.error("Lỗi không xác định");
             } finally {
                 setLoadingPage(false);
             }
@@ -461,13 +462,13 @@ const RegistingCoursesPage = () => {
                 );
             } else {
                 errorMessage({
-                    content: data.message || "An unexpected error occurred",
+                    content: data.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };
@@ -499,13 +500,13 @@ const RegistingCoursesPage = () => {
                 );
             } else {
                 errorMessage({
-                    content: data.message || "An unexpected error occurred",
+                    content: data.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {
             console.error(error);
             errorMessage({
-                content: "An unexpected error occurred",
+                content: "Lỗi không xác định",
             });
         }
     };
