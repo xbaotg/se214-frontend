@@ -43,6 +43,117 @@ const DKHPPage = () => {
     const [departments, setDepartments] = useState<IDepartmentFilter[]>([]);
     const [loadingPage, setLoadingPage] = useState(true);
     const [loading, setLoading] = useState(false);
+    const fetchData = async () => {
+        try {
+            const [
+                response_fetch_courses,
+                response_fetch_departments,
+                response_fetch_registered,
+            ] = await Promise.all([
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/list`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
+                fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/department/list`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                ),
+                // BCK code this for registered courses [
+                fetch(
+                    `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=${process.env.NEXT_PUBLIC_CURRENT_YEAR}&course_semester=${process.env.NEXT_PUBLIC_CURRENT_SEMESTER}`,
+                    {
+                        method: "GET",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${token}`,
+                        },
+                    }
+                ),
+                // BCK code this ]
+            ]);
+            if (!response_fetch_courses.ok) {
+                message.error("Failed to fetch courses");
+            }
+            if (!response_fetch_departments.ok) {
+                message.error("Failed to fetch departments");
+            }
+            // BCK code this [
+            if (!response_fetch_registered.ok) {
+                message.error("Failed to fetch registered courses");
+            }
+            // BCK code this ]
+
+            const response_fetch_courses_data: IApiResponse<
+                ICourseResponse[]
+            > = await response_fetch_courses.json();
+
+            const response_fetch_departments_data: IApiResponse<
+                IDepartment[]
+            > = await response_fetch_departments.json();
+
+            // BCK code this for registered courses [
+            const response_fetch_registered_data: IApiResponse<
+                ICourseResponse[]
+            > = await response_fetch_registered.json();
+
+            const fetch_registered_courses_id =
+                response_fetch_registered_data.data.map(
+                    (course) => course.id
+                );
+
+            setSelectedRowKeys(fetch_registered_courses_id);
+            setAlreadyRegisteredCourses(fetch_registered_courses_id);
+            // BCK code this ]
+
+            const fetch_departments =
+                response_fetch_departments_data.data.map((department) => ({
+                    department_id: department.department_id,
+                    department_name: department.department_name,
+                }));
+
+            const fetch_courses = response_fetch_courses_data.data.map(
+                (course) => ({
+                    key: course.id,
+                    course_id: course.id,
+                    course_name: course.course_name,
+                    course_teacher_id: course.course_teacher_id,
+                    course_fullname: course.course_fullname,
+                    course_room: course.course_room,
+                    course_day: course.course_day,
+                    course_time: generatePeriodString(
+                        course.course_start_shift,
+                        course.course_end_shift
+                    ),
+                    course_size: `${course.current_enroll}/${course.max_enroll}`,
+                    course_department: course.course_department,
+                    course_year: course.course_year,
+                    course_semester: course.course_semester,
+                    course_credit: course.course_credit,
+                })
+            );
+
+            messageApi.success({
+                content: "Lấy thông tin học phần thành công",
+                duration: 1,
+            });
+            setDepartments(fetch_departments);
+            setCourses(fetch_courses);
+        } catch (error) {
+            console.error("Failed to fetch courses: ", error);
+            messageApi.error("Lấy thông tin học phần thất bại");
+        } finally {
+            setLoadingPage(false);
+        }
+    };
 
     const start = async () => {
         setLoading(true);
@@ -111,9 +222,9 @@ const DKHPPage = () => {
                 `Đăng ký thành công ${len} học phần.`
             );
 
-            setCourses([...courses]);
+            // setCourses([...courses]);
             // setReFetch(true);
-
+            fetchData();
         } catch (error) {
             console.error("Failed to register courses: ", error);
             messageApi.error("Đăng ký thất bại !!!");
@@ -143,120 +254,8 @@ const DKHPPage = () => {
             return;
         }
     }, [token, router]);
-
+    
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const [
-                    response_fetch_courses,
-                    response_fetch_departments,
-                    response_fetch_registered,
-                ] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/course/list`, {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }),
-                    fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/department/list`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    ),
-                    // BCK code this for registered courses [
-                    fetch(
-                        `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=${process.env.NEXT_PUBLIC_CURRENT_YEAR}&course_semester=${process.env.NEXT_PUBLIC_CURRENT_SEMESTER}`,
-                        {
-                            method: "GET",
-                            headers: {
-                                "Content-Type": "application/json",
-                                Authorization: `Bearer ${token}`,
-                            },
-                        }
-                    ),
-                    // BCK code this ]
-                ]);
-                if (!response_fetch_courses.ok) {
-                    message.error("Failed to fetch courses");
-                }
-                if (!response_fetch_departments.ok) {
-                    message.error("Failed to fetch departments");
-                }
-                // BCK code this [
-                if (!response_fetch_registered.ok) {
-                    message.error("Failed to fetch registered courses");
-                }
-                // BCK code this ]
-
-                const response_fetch_courses_data: IApiResponse<
-                    ICourseResponse[]
-                > = await response_fetch_courses.json();
-
-                const response_fetch_departments_data: IApiResponse<
-                    IDepartment[]
-                > = await response_fetch_departments.json();
-
-                // BCK code this for registered courses [
-                const response_fetch_registered_data: IApiResponse<
-                    ICourseResponse[]
-                > = await response_fetch_registered.json();
-
-                const fetch_registered_courses_id =
-                    response_fetch_registered_data.data.map(
-                        (course) => course.id
-                    );
-
-                setSelectedRowKeys(fetch_registered_courses_id);
-                setAlreadyRegisteredCourses(fetch_registered_courses_id);
-                // BCK code this ]
-
-                const fetch_departments =
-                    response_fetch_departments_data.data.map((department) => ({
-                        department_id: department.department_id,
-                        department_name: department.department_name,
-                    }));
-
-                const fetch_courses = response_fetch_courses_data.data.map(
-                    (course) => ({
-                        key: course.id,
-                        course_id: course.id,
-                        course_name: course.course_name,
-                        course_teacher_id: course.course_teacher_id,
-                        course_fullname: course.course_fullname,
-                        course_room: course.course_room,
-                        course_day: course.course_day,
-                        course_time: generatePeriodString(
-                            course.course_start_shift,
-                            course.course_end_shift
-                        ),
-                        course_size: `${course.current_enroll}/${course.max_enroll}`,
-                        course_department: course.course_department,
-                        course_year: course.course_year,
-                        course_semester: course.course_semester,
-                        course_credit: course.course_credit,
-                    })
-                );
-
-                messageApi.success({
-                    content: "Lấy thông tin học phần thành công",
-                    duration: 1,
-                });
-                setDepartments(fetch_departments);
-                setCourses(fetch_courses);
-            } catch (error) {
-                console.error("Failed to fetch courses: ", error);
-                messageApi.error("Lấy thông tin học phần thất bại");
-            } finally {
-                setLoadingPage(false);
-            }
-        };
-
         fetchData();
     }, [messageApi, token, router]);
 

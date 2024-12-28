@@ -111,7 +111,7 @@ const PayTuitionModal = ({
                                 pay: value as number,
                             })
                         }
-                        style={{ marginBottom: "1rem", marginTop: "0.5rem" }}
+                        style={{ marginBottom: "1rem", marginTop: "0.5rem", width: "100%" }}
                     />
                 </div>
             </Modal>

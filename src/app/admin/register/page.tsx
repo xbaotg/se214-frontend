@@ -486,8 +486,8 @@ const RegistingCoursesPage = () => {
                 }
             );
 
-            const data: IApiResponse<ICourseResponse> = await result.json();
             if (result.ok) {
+                const data: IApiResponse<ICourseResponse> = await result.json();
                 successMessage({
                     content: `Xác nhận học phần ${
                         data.data.course_code || ""
@@ -499,6 +499,7 @@ const RegistingCoursesPage = () => {
                     prev.filter((course) => course.key !== course_id)
                 );
             } else {
+                const data: IApiResponse<null> = await result.json();
                 errorMessage({
                     content: data.message || "Lỗi không xác định",
                 });

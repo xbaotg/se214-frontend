@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
 import PayTuitionModal from "@/components/admin/TuitionModal";
 import TuitionModal from "@/components/user/TuitionModal";
+import { Info } from "lucide-react";
 
 type DataIndex = keyof ITuition;
 
@@ -66,6 +67,7 @@ const TuitionPage = () => {
                     tuitionStatus: tuition.TuitionStatus,
                     tuitionDeadline: tuition.TuitionDeadline,
                     totalCredit: tuition.TotalCredit,
+                    username: tuition.Username,
                 }));
                 console.log(fetch_tuitions);
                 messageApi.success({
@@ -138,6 +140,57 @@ const TuitionPage = () => {
         } catch (error) {
             console.error("Failed to create tuition", error);
             message.error("Tạo học phí không thành công");
+        }
+    };
+
+
+    const fetchGetTuition = async (tuition: ITuition) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/tuition/get_tuition`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        semester: tuition.semester,
+                        year: tuition.year,
+                        user_id: tuition.userID,
+                    }),
+                }
+            );
+            const data: IApiResponse<CalTuitionResponse> = await response.json();
+            if (response.ok) {
+                messageApi.success({
+                    content: "Lấy thông tin học phí thành công",
+                    duration: 1,
+                });
+            } else {
+                message.error("Lấy thông tin học phí thành công");
+            }
+            // setIsModalOpen(false);
+            setCourses(data.data.courses.map((course) => ({
+                       key: course.id,
+                        course_id: course.id,
+                        course_name: course.course_name,
+                        course_teacher_id: course.course_teacher_id,
+                        course_fullname: course.course_fullname,
+                        course_room: course.course_room,
+                        course_day: course.course_day,
+                        course_time: `${course.course_start_shift}-${course.course_end_shift}`,
+                        course_size: `${course.current_enroll}/${course.max_enroll}`,
+                        course_department: course.course_department,
+                        course_year: course.course_year,
+                        course_semester: course.course_semester,
+                        course_credit: course.course_credit,
+                    })));
+            setTuition(data.data.tuition);
+            setIsTuitionModalOpen(true);
+        } catch (error) {
+            console.error("Failed to create tuition", error);
+            message.error("Lấy thông tin học phí không thành công");
         }
     }
 
@@ -278,10 +331,10 @@ const TuitionPage = () => {
     );    
     const columns = [
         {
-            title: "UserID",
-            dataIndex: "userID",
-            key: "userID",
-            ...getColumnSearchProps("userID"),
+            title: "Username",
+            dataIndex: "username",
+            key: "username",
+            ...getColumnSearchProps("username"),
         },
         {
             title: "Học phí",
@@ -329,14 +382,25 @@ const TuitionPage = () => {
             key: "action",
             render: (text: string, record: ITuition) => (
                 <Space size="large">
-                    <div className="cursor-pointer">
-                        <PayTuitionModal
-                            icon={<DollarCircleOutlined size={16} />}
-                            tuition={record}
-                            allTuition={tuitions}
-                            setTuitions={setTuitions}
-                            token={token as string}
-                        />
+                    <div className="flex gap-4">
+                        <div className="cursor-pointer">
+                            <PayTuitionModal
+                                icon={<DollarCircleOutlined size={16} />}
+                                tuition={record}
+                                allTuition={tuitions}
+                                setTuitions={setTuitions}
+                                token={token as string}
+                            />
+                        </div>
+                        <div className="cursor-pointer">
+                            <Info
+                                size={16}
+                                onClick={() => {
+                                    fetchGetTuition(record);
+                                    setIsTuitionModalOpen(true);
+                                }} 
+                            />
+                        </div>
                     </div>
                 </Space>
             ),

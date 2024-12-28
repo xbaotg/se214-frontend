@@ -305,6 +305,7 @@ export interface ITuitionResponse {
   TuitionDeadline: string;
   CreatedAt: string;
   UpdatedAt: string;
+  Username: string;
 }
 
 export interface ITuition {
@@ -318,6 +319,7 @@ export interface ITuition {
   semester: number;
   tuitionStatus: TuStatus;
   tuitionDeadline: string;
+  username: string;
 }
 
 // {
@@ -353,4 +355,20 @@ export interface IUpdateUserFormValues {
   user_fullname: string;
   year: number;
   user_role: UserRoles;
+}
+
+// {
+//   "deadline": "string",
+//   "semester": 0,
+//   "tuition": 0,
+//   "tuition_status": "paid",
+//   "user_id": "string",
+//   "year": 0
+// }
+export interface UpdateTuitionFormValues {
+  deadline: string;
+  tuition: number;
+  paid: number;
+  tuition_status: TuStatus;
+  id: string;
 }

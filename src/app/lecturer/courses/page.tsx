@@ -47,7 +47,7 @@ const LecturerCoursesPage = () => {
                 > = await response_fetch_courses.json();
 
                 if (!response_fetch_courses_data.data) {
-                    message.error("Chưa có môn học nào.");
+                    message.error("Chưa có Khóa học nào.");
                     setCourses([]);
                     return;
                 }
@@ -217,7 +217,7 @@ const LecturerCoursesPage = () => {
 
     const columns = [
         {
-            title: "Mã môn",
+            title: "Mã Khóa",
             dataIndex: "course_name",
             key: "course_name",
             render: (text: string) => (
@@ -226,7 +226,7 @@ const LecturerCoursesPage = () => {
             ...getColumnSearchProps("course_name"),
         },
         {
-            title: "Tên môn",
+            title: "Tên Khóa",
             dataIndex: "course_fullname",
             key: "course_fullname",
             ...getColumnSearchProps("course_fullname"),
@@ -280,7 +280,7 @@ const LecturerCoursesPage = () => {
         <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
             {contextHolder}
             <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">Môn học</span>
+                <span className="text-xl text-red-500 font-bold">Khóa học</span>
             </div>
             <Table<ICourse> dataSource={courses} columns={columns} />
         </div>

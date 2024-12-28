@@ -169,7 +169,7 @@ const AdminCoursesPage = () => {
                     message.error("Lấy thông tin khoa thất bại");
                 }
                 if (!response_fetch_subjects.ok) {
-                    message.error("Lấy thông tin môn học thất bại");
+                    message.error("Lấy thông tin Khóa học thất bại");
                 }
                 const response_fetch_courses_data: IApiResponse<
                     ICourseResponse[]
@@ -377,7 +377,7 @@ const AdminCoursesPage = () => {
 
     const columns = [
         {
-            title: "Mã môn",
+            title: "Mã Khóa",
             dataIndex: "course_name",
             key: "course_name",
             render: (text: string) => (
@@ -386,7 +386,7 @@ const AdminCoursesPage = () => {
             ...getColumnSearchProps("course_name"),
         },
         {
-            title: "Tên môn",
+            title: "Tên Khóa",
             dataIndex: "course_fullname",
             key: "course_fullname",
             ...getColumnSearchProps("course_fullname"),
@@ -537,7 +537,7 @@ const AdminCoursesPage = () => {
             if (result.ok) {
                 successMessage({
                     // content: `Courses created successfully for ${data.data.course_name}`,
-                    content: `Thêm môn học ${data.data.course_name} thành công.`,
+                    content: `Thêm Khóa học ${data.data.course_name} thành công.`,
                     duration: 1,
                 });
 
@@ -649,13 +649,13 @@ const AdminCoursesPage = () => {
                 <div className="flex gap-8">
                     <div className="max-w-[50%] my-auto">
                         <span className="flex text-blue-400 font-semibold text-lg justify-center">
-                            Thông Tin Môn Học
+                            Thông Tin Khóa Học
                         </span>
                         <Select
                             showSearch
                             optionFilterProp="label"
                             size={"middle"}
-                            placeholder="Mã môn"
+                            placeholder="Mã Khóa"
                             value={courseCreateForm.course_name}
                             onChange={(value) => {
                                 handleCourseNameChange(value);
@@ -669,7 +669,7 @@ const AdminCoursesPage = () => {
                         <Input
                             disabled
                             size="middle"
-                            placeholder="Tên môn"
+                            placeholder="Tên Khóa"
                             value={
                                 courseCreateForm.course_fullname
                             }
@@ -712,7 +712,7 @@ const AdminCoursesPage = () => {
                     </div>
                     <div className="max-w-[50%]">
                         <span className="flex text-blue-400 font-semibold text-lg justify-center">
-                            Chi Tiết Môn Học
+                            Chi Tiết Khóa Học
                         </span>
                         <Select
                             size={"middle"}
@@ -869,7 +869,7 @@ const AdminCoursesPage = () => {
         <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
             {contextHolder}
             <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">Môn học</span>
+                <span className="text-xl text-red-500 font-bold">Khóa học</span>
                 <AddModal
                     open={open}
                     setOpen={setOpen}
@@ -877,9 +877,9 @@ const AdminCoursesPage = () => {
                     onFinish={onFinish}
                     onFinishFailed={onFinishFailed}
                     buttonIcon={<Plus size={16} />}
-                    buttonContent="Thêm môn học"
-                    formTitle="Thêm môn"
-                    submitButtonContent="Thêm môn mới"
+                    buttonContent="Thêm Khóa học"
+                    formTitle="Thêm Khóa"
+                    submitButtonContent="Thêm Khóa mới"
                     modalContent={modalContent}
                     resetModalContentValues={resetCreateCourseForm}
                 />

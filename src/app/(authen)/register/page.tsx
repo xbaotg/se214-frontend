@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { ISignUpFormValues, ISignUpResponse, UserRoles } from "@/types";
+import { IApiResponse, ISignUpFormValues, UserRoles } from "@/types";
 import { Button, Form, Input, FormProps, message, InputNumber } from "antd";
 
 const SignUp: React.FC = () => {
@@ -75,10 +75,10 @@ const SignUp: React.FC = () => {
                 }
             );
 
-            const data: ISignUpResponse = await result.json();
+            const response: IApiResponse<null> = await result.json();
             if (result.ok) {
                 successMessage({
-                    content: `Account created successfully for ${data.username}`,
+                    content: `Account created successfully`,
                     duration: 1,
                 });
 
@@ -87,7 +87,7 @@ const SignUp: React.FC = () => {
                 }, 1000);
             } else {
                 errorMessage({
-                    content: data.detail || "Lỗi không xác định",
+                    content: response.message || "Lỗi không xác định",
                 });
             }
         } catch (error) {

@@ -3,14 +3,17 @@
 import { DollarCircleOutlined, MoneyCollectTwoTone, SearchOutlined } from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Modal, DatePicker, Popconfirm } from "antd";
+import { message, Table, Button, Input, Space, Modal, DatePicker, Popconfirm, Form, InputNumber, Select, FormProps } from "antd";
 import { InputRef, TableColumnType,  Divider } from "antd";
 
 import {
+    CalTuitionResponse,
     CreateTuitionFormValues,
     IApiResponse,
+    ICourse,
     ITuition,
     ITuitionResponse,
+    UpdateTuitionFormValues,
 } from "@/types";
 import Highlighter from "react-highlight-words";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -18,12 +21,15 @@ import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
 import PayTuitionModal from "@/components/admin/TuitionModal";
 import TypedInputNumber from "antd/es/input-number";
-import { Trash2 } from "lucide-react";
+import { Info, PenLine, Trash2 } from "lucide-react";
+import dayjs from "dayjs";
+import TuitionModal from "@/components/user/TuitionModal";
 
 type DataIndex = keyof ITuition;
 
 const TuitionPage = () => {
     const { refreshToken: token } = useAuth();
+    const [form] = Form.useForm();
     const [loadingPage, setLoadingPage] = useState(true);
     const [tuitions, setTuitions] = useState<ITuition[]>([]);
     const [searchText, setSearchText] = useState("");
@@ -35,7 +41,22 @@ const TuitionPage = () => {
         semester: 1,
         deadline: "",
     });
+    const tuitionOptions = [
+        {
+            label: "Chưa đóng",
+            value: "unpaid",
+        },
+        {
+            label: "Đã đóng",
+            value: "paid",
+        },
+    ];
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+    const [isTuitionModalOpen, setIsTuitionModalOpen] = useState(false);
+    const [courses, setCourses] = useState<ICourse[]>([]);
+    const [tuition, setTuition] = useState<number>(0);
+
     const fetchTuitions = async () => {
         try {
             const response = await fetch(
@@ -63,8 +84,8 @@ const TuitionPage = () => {
                     tuitionStatus: tuition.TuitionStatus,
                     tuitionDeadline: tuition.TuitionDeadline,
                     totalCredit: tuition.TotalCredit,
+                    username: tuition.Username,
                 }));
-                console.log(fetch_tuitions);
                 messageApi.success({
                     content: "Lấy danh sách học phí thành công",
                     duration: 1,
@@ -83,6 +104,56 @@ const TuitionPage = () => {
     useEffect(() => {
         fetchTuitions();
     }, [messageApi, token]);
+
+    const fetchGetTuition = async (tuition: ITuition) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/tuition/get_tuition`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        semester: tuition.semester,
+                        year: tuition.year,
+                        user_id: tuition.userID,
+                    }),
+                }
+            );
+            const data: IApiResponse<CalTuitionResponse> = await response.json();
+            if (response.ok) {
+                messageApi.success({
+                    content: "Lấy thông tin học phí thành công",
+                    duration: 1,
+                });
+            } else {
+                message.error("Lấy thông tin học phí thành công");
+            }
+            // setIsModalOpen(false);
+            setCourses(data.data.courses.map((course) => ({
+                       key: course.id,
+                        course_id: course.id,
+                        course_name: course.course_name,
+                        course_teacher_id: course.course_teacher_id,
+                        course_fullname: course.course_fullname,
+                        course_room: course.course_room,
+                        course_day: course.course_day,
+                        course_time: `${course.course_start_shift}-${course.course_end_shift}`,
+                        course_size: `${course.current_enroll}/${course.max_enroll}`,
+                        course_department: course.course_department,
+                        course_year: course.course_year,
+                        course_semester: course.course_semester,
+                        course_credit: course.course_credit,
+                    })));
+            setTuition(data.data.tuition);
+            setIsTuitionModalOpen(true);
+        } catch (error) {
+            console.error("Failed to create tuition", error);
+            message.error("Lấy thông tin học phí không thành công");
+        }
+    }
 
 //     {
 //   "deadline": "string",
@@ -144,6 +215,49 @@ const TuitionPage = () => {
         } catch (error) {
             console.error("Failed to delete tuition", error);
             message.error("Xóa học phí không thành công");
+        }
+    }
+
+    const handleUpdateTuition: FormProps["onFinish"] = async (
+        values: UpdateTuitionFormValues
+    ) => {
+        try {
+            console.log(values);
+            const {deadline, tuition, paid, tuition_status, id} = values;
+            console.log(deadline, tuition, paid, tuition_status, id);
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/tuition/update_tuition`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(
+                        {
+                            deadline: deadline,
+                            tuition: tuition,
+                            paid: paid,
+                            tuition_status: tuition_status,
+                            id: id,
+                        }
+                    ),
+                }
+            );
+            const data: IApiResponse<ITuitionResponse> = await response.json();
+            if (response.ok) {
+                messageApi.success({
+                    content: "Cập nhật học phí thành công",
+                    duration: 1,
+                });
+                setIsUpdateModalOpen(false);
+                fetchTuitions();
+            } else {
+                message.error("Cập nhật học phí không thành công: " + data.message);
+            }
+        } catch (error) {
+            console.error("Failed to update tuition", error);
+            message.error("Cập nhật học phí không thành công");
         }
     }
 
@@ -286,10 +400,10 @@ const TuitionPage = () => {
 
     const columns = [
         {
-            title: "UserID",
-            dataIndex: "userID",
-            key: "userID",
-            ...getColumnSearchProps("userID"),
+            title: "Username",
+            dataIndex: "username",
+            key: "username",
+            ...getColumnSearchProps("username"),
         },
         {
             title: "Học phí",
@@ -357,11 +471,100 @@ const TuitionPage = () => {
                                 <Trash2 size={16} color={"red"}/>
                             </Popconfirm>
                         </div>
+                        <div className="cursor-pointer">
+                            <PenLine
+                                size={16}
+                                onClick={() => {
+                                    setIsUpdateModalOpen(true);
+                                    form.setFieldsValue({
+                                        deadline: dayjs(record.tuitionDeadline, "YYYY-MM-DD"),
+                                        tuition: record.tuition,
+                                        tuition_status: record.tuitionStatus,
+                                        paid: record.paid,
+                                        id: record.id,
+                                    });
+                                }} 
+                            />
+                        </div>
+                        <div className="cursor-pointer">
+                            <Info
+                                size={16}
+                                onClick={() => {
+                                    fetchGetTuition(record);
+                                    setIsTuitionModalOpen(true);
+                                }} 
+                            />
+                        </div>
                     </div>
                 </Space>
             ),
         },
     ];
+
+    const formItems = (
+        <>
+            <Form.Item
+                label="ID"
+                name="id"
+                hidden
+            >
+                <Input />
+            </Form.Item>
+
+            <Form.Item
+                label="Deadline"
+                name="deadline"
+                rules={[{ required: true, message: "Nhập deadline" }]}
+            >
+                <DatePicker placeholder="Deadline" />
+            </Form.Item>
+            <Form.Item
+                label="Học phí"
+                name="tuition"
+                rules={[{ required: true, message: "Nhập học phí" }]}
+            >
+                <InputNumber 
+                    style={{ width: "100%" }}
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                    addonAfter="₫"
+                />
+            </Form.Item>
+            <Form.Item
+                label="Trạng thái"
+                name="tuition_status"
+                rules={[{ required: true, message: "Nhập trạng thái" }]}
+            >
+                <Select
+                    placeholder="Chọn trạng thái"
+                    options={tuitionOptions}
+                    onChange={(value) => {
+                        if (value === "paid") {
+                            form.setFieldsValue({
+                                paid: form.getFieldValue("tuition"),
+                            });
+                        } else if (value === "unpaid") {
+                            form.setFieldsValue({
+                                paid: 0,
+                            });
+                        }
+                    }}
+                />
+            </Form.Item>
+            <Form.Item
+                label="Đã đóng"
+                name="paid"
+                rules={[{ required: true, message: "Nhập số tiền đã đóng" }]}
+            >
+                <InputNumber 
+                    style={{ width: "100%" }}
+                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                    addonAfter="₫"
+                />
+            </Form.Item>
+        </>
+    )
 
     if (loadingPage) {
         return <Loading />;
@@ -398,6 +601,7 @@ const TuitionPage = () => {
                             Năm học:
                         </label>
                         <TypedInputNumber
+                            required
                             size="middle"
                             placeholder="Năm học"
                             min={2022}
@@ -414,6 +618,7 @@ const TuitionPage = () => {
                             Học kỳ:
                         </label>
                         <TypedInputNumber
+                            required
                             size="middle"
                             placeholder="Học kỳ"
                             min={1}
@@ -431,6 +636,7 @@ const TuitionPage = () => {
                             Deadline:
                         </label>
                         <DatePicker
+                            required
                             placeholder="Deadline"
                             value={createTuitionForm.deadline}
                             onChange={(date) =>
@@ -444,6 +650,29 @@ const TuitionPage = () => {
                     </div>
                 </Modal>
             </div>
+
+            <Modal 
+                title="Chỉnh sửa học phí"
+                open={isUpdateModalOpen}
+                onOk={form.submit} 
+                onCancel={() => setIsUpdateModalOpen(false)}
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    name="createTuition"
+                    onFinish={handleUpdateTuition}
+                >
+                    {formItems}
+                </Form>
+            </Modal>
+
+            <TuitionModal
+                isModalOpen={isTuitionModalOpen}
+                setIsModalOpen={setIsTuitionModalOpen}
+                courses={courses}
+                tuition={tuition}
+            />
 
             <Table<ITuition> 
             columns={columns} 
