@@ -17,49 +17,38 @@ interface TimeColumnProps {
 }
 
 export const TimeColumn = ({ day, courses }: TimeColumnProps) => {
-    // Tạo mảng 10 phần tử để đại diện cho 10 tiết học
-    const periods = Array(10).fill(null);
-
-    // Sắp xếp các khóa học vào đúng vị trí tiết học
     const renderCourses = () => {
-        return periods.map((_, index) => {
-            const period = index + 1;
-            const course = courses.find(
-                (c) => period >= c.startPeriod && period <= c.endPeriod
-            );
+        const slots = Array(10).fill(null);
 
+        courses.forEach((course) => {
+            for (let i = course.startPeriod - 1; i < course.endPeriod; i++) {
+                slots[i] = course;
+            }
+        });
+
+        return slots.map((course, index) => {
             if (!course) {
                 return (
                     <div
-                        key={`empty-${day}-${period}`}
+                        key={`empty-${day}-${index + 1}`}
                         className="h-16 border-b border-gray-200"
                     />
                 );
             }
 
-            // Chỉ render CourseCard ở tiết đầu tiên của môn học
-            if (period === course.startPeriod) {
-                const heightClass = `h-${
-                    (course.endPeriod - course.startPeriod + 1) * 16
-                }`;
-
+            if (index + 1 === course.startPeriod) {
+                const span = course.endPeriod - course.startPeriod + 1;
                 return (
                     <div
                         key={course.id}
-                        className={`${heightClass} relative border-b border-gray-200`}
-                        style={{
-                            gridRow: `span ${
-                                course.endPeriod - course.startPeriod + 1
-                            }`,
-                        }}
+                        className="relative border-b border-gray-200"
+                        style={{ height: `${span * 4}rem` }}
                     >
                         <CourseCard
                             code={course.course_name}
                             name={course.course_fullname}
                             teacher={course.course_teacher}
                             room={course.course_room}
-                            // startDate={course.startDate}
-                            // endDate={course.endDate}
                         />
                     </div>
                 );
@@ -76,7 +65,7 @@ export const TimeColumn = ({ day, courses }: TimeColumnProps) => {
                     Thứ {day}
                 </div>
             </div>
-            <div className="grid grid-rows-10">{renderCourses()}</div>
+            <div className="flex flex-col">{renderCourses()}</div>
         </div>
     );
 };

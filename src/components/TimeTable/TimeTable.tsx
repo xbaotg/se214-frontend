@@ -22,29 +22,33 @@ interface TimeTableProps {
 export const TimeTable = ({ courses }: TimeTableProps) => {
     return (
         <div className="container mx-auto p-4">
-            <div className="grid grid-cols-7 gap-1">
-                {/* Cột thời gian */}
-                <div className="border-r border-gray-300 bg-gray-100">
-                    <div className="h-12 border-b border-gray-300 p-2 flex items-center justify-center">
-                        <div className="text-sm font-medium">Thứ / Tiết</div>
+            <div className="overflow-x-auto">
+                <div className="grid grid-cols-7 min-w-[800px] md:min-w-full">
+                    {/* Cột thời gian */}
+                    <div className="border-r border-gray-300 bg-gray-100">
+                        <div className="h-12 border-b border-gray-300 p-2 flex items-center justify-center">
+                            <div className="text-sm font-medium">
+                                Thứ / Tiết
+                            </div>
+                        </div>
+                        {timeSlots.map((slot) => (
+                            <TimeSlot
+                                key={slot.period}
+                                period={slot.period}
+                                time={slot.time}
+                            />
+                        ))}
                     </div>
-                    {timeSlots.map((slot) => (
-                        <TimeSlot
-                            key={slot.period}
-                            period={slot.period}
-                            time={slot.time}
+
+                    {/* Các cột thứ 2-7 */}
+                    {[2, 3, 4, 5, 6, 7].map((day) => (
+                        <TimeColumn
+                            key={day}
+                            day={day}
+                            courses={courses[day] || []}
                         />
                     ))}
                 </div>
-
-                {/* Các cột thứ 2-7 */}
-                {[2, 3, 4, 5, 6, 7].map((day) => (
-                    <TimeColumn
-                        key={day}
-                        day={day}
-                        courses={courses[day] || []}
-                    />
-                ))}
             </div>
         </div>
     );
