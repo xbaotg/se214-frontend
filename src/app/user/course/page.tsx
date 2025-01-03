@@ -205,7 +205,9 @@ const DKHPPage = () => {
                 message.error("Failed to fetch courses");
             }
         };
-        fetchData();
+        if (token) {
+            fetchData();
+        }
     }, [messageApi, token, router]);
 
     const getDepartmentName = (department_id: string | undefined) => {

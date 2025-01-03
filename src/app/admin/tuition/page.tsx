@@ -102,7 +102,9 @@ const TuitionPage = () => {
         }
     };
     useEffect(() => {
-        fetchTuitions();
+        if (token) {
+            fetchTuitions();
+        }
     }, [messageApi, token]);
 
     const fetchGetTuition = async (tuition: ITuition) => {

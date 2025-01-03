@@ -70,7 +70,9 @@ const AdminDepartmentPage = () => {
                 setLoadingPage(false);
             }
         };
-        fetchDepartments();
+        if (token) {
+            fetchDepartments();
+        }
     }, [messageApi, token]);
 
     const fetchDelteDepartment = async (department: IDepartment) => {

@@ -61,7 +61,9 @@ const TKBPage = () => {
                 setLoading(false);
             }
         };
-        fetchCourses();
+        if (token) {
+            fetchCourses();
+        }
     }, [messageApi, token]);
 
     if (loading) {

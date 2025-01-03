@@ -62,9 +62,10 @@ const AdminPage = () => {
                 messageApi.error("Không thể lấy dữ liệu từ máy chủ");
             }
         }
-
-        fetchStats();
-    }, []);
+        if (token) {
+            fetchStats();
+        }
+    }, [token]);
 
 
     const headerStyle: React.CSSProperties = {

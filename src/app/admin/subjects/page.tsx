@@ -111,8 +111,10 @@ const AdminCoursesPage = () => {
                 setLoadingPage(false);
             }
         };
-        fetchData();
-        setReFetch(false);
+        if (token) {
+            fetchData();
+            setReFetch(false);
+        }
     }, [token, messageApi, reFetch]);
 
     useEffect(() => {

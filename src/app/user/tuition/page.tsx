@@ -86,7 +86,9 @@ const TuitionPage = () => {
         }
     };
     useEffect(() => {
-        fetchTuitions();
+        if (token) {
+            fetchTuitions();
+        }
     }, [messageApi, token]);
 
 //     {

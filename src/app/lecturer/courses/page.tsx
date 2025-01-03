@@ -87,7 +87,9 @@ const LecturerCoursesPage = () => {
                 setLoadingPage(false);
             }
         };
-        fetchData();
+        if (token) {
+            fetchData();
+        }
     }, [token, messageApi]);
 
     const handleSearch = (

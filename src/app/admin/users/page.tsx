@@ -80,7 +80,9 @@ const AdminUserPage = () => {
                 setLoadingPage(false);
             }
         };
-        fetchTeachers();
+        if (token) {
+            fetchTeachers();
+        }
     }, [messageApi, token]);
 
     const fetchUpdateRole = async (record: IUser, role: string) => {

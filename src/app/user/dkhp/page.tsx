@@ -256,7 +256,9 @@ const DKHPPage = () => {
     }, [token, router]);
     
     useEffect(() => {
-        fetchData();
+        if (token) {
+            fetchData();
+        }
     }, [messageApi, token, router]);
 
     const getDepartmentName = (department_id: string | undefined) => {
