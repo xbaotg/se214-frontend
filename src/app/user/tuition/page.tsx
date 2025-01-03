@@ -1,9 +1,13 @@
 "use client";
 
-import { DollarCircleOutlined, MoneyCollectTwoTone, SearchOutlined } from "@ant-design/icons";
+import {
+    DollarCircleOutlined,
+    MoneyCollectTwoTone,
+    SearchOutlined,
+} from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Modal} from "antd";
+import { message, Table, Button, Input, Space, Modal } from "antd";
 import { InputRef, TableColumnType, Divider } from "antd";
 
 import {
@@ -91,11 +95,11 @@ const TuitionPage = () => {
         }
     }, [messageApi, token]);
 
-//     {
-//   "deadline": "string",
-//   "semester": 0,
-//   "year": 0
-// }
+    //     {
+    //   "deadline": "string",
+    //   "semester": 0,
+    //   "year": 0
+    // }
     const fetchCalTuition = async () => {
         try {
             const response = await fetch(
@@ -108,11 +112,12 @@ const TuitionPage = () => {
                     },
                     body: JSON.stringify({
                         semester: form.semester,
-                        year: form.year
+                        year: form.year,
                     }),
                 }
             );
-            const data: IApiResponse<CalTuitionResponse> = await response.json();
+            const data: IApiResponse<CalTuitionResponse> =
+                await response.json();
             if (response.ok) {
                 messageApi.success({
                     content: "Tạo học phí thành công",
@@ -120,23 +125,26 @@ const TuitionPage = () => {
                 });
             } else {
                 message.error("Tạo học phí không thành công");
+                return;
             }
             // setIsModalOpen(false);
-            setCourses(data.data.courses.map((course) => ({
-                       key: course.id,
-                        course_id: course.id,
-                        course_name: course.course_name,
-                        course_teacher_id: course.course_teacher_id,
-                        course_fullname: course.course_fullname,
-                        course_room: course.course_room,
-                        course_day: course.course_day,
-                        course_time: `${course.course_start_shift}-${course.course_end_shift}`,
-                        course_size: `${course.current_enroll}/${course.max_enroll}`,
-                        course_department: course.course_department,
-                        course_year: course.course_year,
-                        course_semester: course.course_semester,
-                        course_credit: course.course_credit,
-                    })));
+            setCourses(
+                data.data.courses.map((course) => ({
+                    key: course.id,
+                    course_id: course.id,
+                    course_name: course.course_name,
+                    course_teacher_id: course.course_teacher_id,
+                    course_fullname: course.course_fullname,
+                    course_room: course.course_room,
+                    course_day: course.course_day,
+                    course_time: `${course.course_start_shift}-${course.course_end_shift}`,
+                    course_size: `${course.current_enroll}/${course.max_enroll}`,
+                    course_department: course.course_department,
+                    course_year: course.course_year,
+                    course_semester: course.course_semester,
+                    course_credit: course.course_credit,
+                }))
+            );
             setTuition(data.data.tuition);
             setIsTuitionModalOpen(true);
         } catch (error) {
@@ -144,7 +152,6 @@ const TuitionPage = () => {
             message.error("Tạo học phí không thành công");
         }
     };
-
 
     const fetchGetTuition = async (tuition: ITuition) => {
         try {
@@ -163,39 +170,42 @@ const TuitionPage = () => {
                     }),
                 }
             );
-            const data: IApiResponse<CalTuitionResponse> = await response.json();
+            const data: IApiResponse<CalTuitionResponse> =
+                await response.json();
+            setTuition(data.data.tuition);
             if (response.ok) {
                 messageApi.success({
                     content: "Lấy thông tin học phí thành công",
                     duration: 1,
                 });
+                setCourses(
+                data.data.courses.map((course) => ({
+                    key: course.id,
+                    course_id: course.id,
+                    course_name: course.course_name,
+                    course_teacher_id: course.course_teacher_id,
+                    course_fullname: course.course_fullname,
+                    course_room: course.course_room,
+                    course_day: course.course_day,
+                    course_time: `${course.course_start_shift}-${course.course_end_shift}`,
+                    course_size: `${course.current_enroll}/${course.max_enroll}`,
+                    course_department: course.course_department,
+                    course_year: course.course_year,
+                    course_semester: course.course_semester,
+                    course_credit: course.course_credit,
+                })));
             } else {
-                message.error("Lấy thông tin học phí thành công");
+                message.error("Lấy thông tin học phí không thành công: " + data.message);
+                setCourses([]);
             }
             // setIsModalOpen(false);
-            setCourses(data.data.courses.map((course) => ({
-                       key: course.id,
-                        course_id: course.id,
-                        course_name: course.course_name,
-                        course_teacher_id: course.course_teacher_id,
-                        course_fullname: course.course_fullname,
-                        course_room: course.course_room,
-                        course_day: course.course_day,
-                        course_time: `${course.course_start_shift}-${course.course_end_shift}`,
-                        course_size: `${course.current_enroll}/${course.max_enroll}`,
-                        course_department: course.course_department,
-                        course_year: course.course_year,
-                        course_semester: course.course_semester,
-                        course_credit: course.course_credit,
-                    })));
-            setTuition(data.data.tuition);
+            
             setIsTuitionModalOpen(true);
         } catch (error) {
             console.error("Failed to create tuition", error);
             message.error("Lấy thông tin học phí không thành công");
         }
-    }
-
+    };
 
     const handleSearch = (
         selectedKeys: string[],
@@ -326,11 +336,11 @@ const TuitionPage = () => {
         style: "currency",
         currency: "VND",
         minimumFractionDigits: 0,
-    })
-    const modify = (value: string) => (
+    });
+    const modify = (value: string) =>
         // return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-    );    
+        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
     const columns = [
         {
             title: "Username",
@@ -344,9 +354,7 @@ const TuitionPage = () => {
             key: "tuition",
             ...getColumnSearchProps("tuition"),
             render: (text: number) => (
-                <div>
-                    {modify(formattedAmount.format(text))}
-                </div>
+                <div>{modify(formattedAmount.format(text))}</div>
             ),
         },
         {
@@ -355,9 +363,7 @@ const TuitionPage = () => {
             key: "paid",
             ...getColumnSearchProps("paid"),
             render: (text: number) => (
-                <div>
-                    {modify(formattedAmount.format(text))}
-                </div>
+                <div>{modify(formattedAmount.format(text))}</div>
             ),
         },
         {
@@ -377,7 +383,6 @@ const TuitionPage = () => {
             dataIndex: "tuitionStatus",
             key: "tuitionStatus",
             ...getColumnSearchProps("tuitionStatus"),
-
         },
         {
             title: "Thao tác",
@@ -400,7 +405,7 @@ const TuitionPage = () => {
                                 onClick={() => {
                                     fetchGetTuition(record);
                                     setIsTuitionModalOpen(true);
-                                }} 
+                                }}
                             />
                         </div>
                     </div>
@@ -414,11 +419,13 @@ const TuitionPage = () => {
     }
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             <div>
                 {contextHolder}
-                <div className="flex justify-between items-center p-4">
-                    <h1 className="text-2xl font-semibold">Quản lý học phí</h1>
+                <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                    <span className="text-lg md:text-xl text-red-500 font-bold text-center">
+                        Quản lý học phí
+                    </span>
                     <Button
                         type="primary"
                         icon={<MoneyCollectTwoTone />}
@@ -440,7 +447,7 @@ const TuitionPage = () => {
                     open={isModalOpen}
                     onOk={() => fetchCalTuition()}
                     onCancel={() => setIsModalOpen(false)}
-                >   
+                >
                     <div className="p-4">
                         <span className="flex text-blue-400 font-semibold text-lg justify-center">
                             Tính học phí
@@ -453,7 +460,10 @@ const TuitionPage = () => {
                             size="middle"
                             placeholder="Năm học"
                             value={form.year}
-                            style={{ marginBottom: "1rem", marginTop: "0.5rem" }}
+                            style={{
+                                marginBottom: "1rem",
+                                marginTop: "0.5rem",
+                            }}
                         />
                         <label className="text-red-500 font-semibold">
                             Học kỳ:
@@ -468,30 +478,32 @@ const TuitionPage = () => {
                 </Modal>
             </div>
 
-            <Table<ITuition> 
-            columns={columns} 
-            dataSource={tuitions} 
-            expandable={{
-                    expandRowByClick: true,
-                    expandedRowRender: (record) => {
-                        return (
-                            <div className="ml-10">
-                                <div>
+            <div className="overflow-x-auto">
+                <Table<ITuition>
+                    columns={columns}
+                    dataSource={tuitions}
+                    scroll={{ x: "max-content", y: 55 * 10 }}
+                    expandable={{
+                        expandRowByClick: true,
+                        expandedRowRender: (record) => {
+                            return (
+                                <div className="ml-10">
                                     <div>
-                                        <strong>Tín chỉ: &nbsp;</strong>
-                                        {record.totalCredit}
+                                        <div>
+                                            <strong>Tín chỉ: &nbsp;</strong>
+                                            {record.totalCredit}
+                                        </div>
+                                        <div>
+                                            <strong>Deadline: &nbsp;</strong>
+                                            {record.tuitionDeadline}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <strong>Deadline: &nbsp;</strong>
-                                        {record.tuitionDeadline}
-                                    </div>
-
                                 </div>
-                            </div>
-                        );
-                    },
-                }}
-            />
+                            );
+                        },
+                    }}
+                />
+            </div>
         </div>
     );
 };

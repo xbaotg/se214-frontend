@@ -395,10 +395,10 @@ const DKHPPage = () => {
     ];
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto px-4">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             {contextHolder}
-            <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">
+            <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                <span className="text-lg md:text-xl text-red-500 font-bold text-center">
                     Quản lý môn học
                 </span>
                 <Button
@@ -430,6 +430,7 @@ const DKHPPage = () => {
                             style: rowStyle(record.course_id),
                         };
                     }}
+                    scroll={{ x: "max-content", y: 55 * 10 }}
                     expandable={{
                         expandRowByClick: true,
                         expandedRowRender: (record) => {

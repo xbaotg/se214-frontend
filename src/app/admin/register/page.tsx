@@ -54,7 +54,6 @@ const RegistingCoursesPage = () => {
         }[]
     >([]);
 
-
     const updatedCourses = (courses: ICourse[]) => {
         setCourses(courses);
     };
@@ -519,14 +518,20 @@ const RegistingCoursesPage = () => {
     }
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             {contextHolder}
-            <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">
+            <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                <span className="text-lg md:text-xl text-red-500 font-bold text-center">
                     Các lớp cần duyệt
                 </span>
             </div>
-            <Table<ICourse> dataSource={courses} columns={columns} />
+            <div className="overflow-x-auto">
+                <Table<ICourse>
+                    dataSource={courses}
+                    columns={columns}
+                    scroll={{ x: "max-content", y: 55 * 10 }}
+                />
+            </div>
         </div>
     );
 };

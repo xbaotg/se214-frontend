@@ -3,7 +3,17 @@
 import { SearchOutlined } from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Form, InputNumber, Select, Popconfirm} from "antd";
+import {
+    message,
+    Table,
+    Button,
+    Input,
+    Space,
+    Form,
+    InputNumber,
+    Select,
+    Popconfirm,
+} from "antd";
 import type { InputRef, TableColumnType, FormProps } from "antd";
 
 import {
@@ -62,7 +72,7 @@ const AdminUserPage = () => {
                         userFullname: teacher.user_fullname,
                         year: teacher.year,
                         userRole: teacher.user_role,
-                        createdAt: "", 
+                        createdAt: "",
                         updatedAt: "",
                     }));
                     messageApi.success({
@@ -274,14 +284,10 @@ const AdminUserPage = () => {
     const getColumnSearchSelectProps = (
         dataIndex: DataIndex
     ): TableColumnType<IUser> => ({
-        filterDropdown: ({
-            setSelectedKeys,
-            selectedKeys,
-            confirm,
-        }) => (
-        
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm }) => (
             <div style={{ padding: 8 }} onKeyDown={(e) => e.stopPropagation()}>
                 <Select
+                    showSearch
                     placeholder={`Search ${dataIndex}`}
                     value={selectedKeys[0]}
                     onChange={(value) => {
@@ -290,17 +296,20 @@ const AdminUserPage = () => {
                             selectedKeys as string[],
                             confirm,
                             dataIndex
-                        )}
-                    }
+                        );
+                    }}
                     style={{ marginBottom: 8, display: "block" }}
                 >
-                    <Select.Option value={UserRoles.Lecturer}>Giảng viên</Select.Option>
-                    <Select.Option value={UserRoles.User}>Sinh viên</Select.Option>
+                    <Select.Option value={UserRoles.Lecturer}>
+                        Giảng viên
+                    </Select.Option>
+                    <Select.Option value={UserRoles.User}>
+                        Sinh viên
+                    </Select.Option>
                     <Select.Option value={UserRoles.Admin}>Admin</Select.Option>
                     <Select.Option value="">All</Select.Option>
                 </Select>
             </div>
-
         ),
         filterIcon: (filtered: boolean) => (
             <SearchOutlined
@@ -314,8 +323,8 @@ const AdminUserPage = () => {
                       .toLowerCase()
                       .includes((value as string).toLowerCase())
                 : false,
-        });
-                        
+    });
+
     const formEditItems = (
         <>
             <Form.Item
@@ -354,27 +363,24 @@ const AdminUserPage = () => {
                         message: "Please input your role!",
                     },
                 ]}
-
             >
                 <Select>
                     <Select.Option value={UserRoles.Lecturer}>
                         Giảng viên
                     </Select.Option>
-                    <Select.Option value={UserRoles.User}>Sinh viên</Select.Option>
+                    <Select.Option value={UserRoles.User}>
+                        Sinh viên
+                    </Select.Option>
                     <Select.Option value={UserRoles.Admin}>Admin</Select.Option>
                 </Select>
             </Form.Item>
-        </>    
+        </>
     );
 
     const onFinishEdit: FormProps["onFinish"] = async (
         values: IUpdateUserFormValues
     ) => {
-        const {
-            user_fullname,
-            year,
-            user_role,
-        } = values;
+        const { user_fullname, year, user_role } = values;
 
         try {
             const response = await fetch(
@@ -421,12 +427,27 @@ const AdminUserPage = () => {
         console.log("Failed:", errorInfo);
     };
 
-        
     const columns = [
         {
             title: "Username",
             dataIndex: "username",
             key: "username",
+            // filteredValue: globalSearchText ? [globalSearchText] : null,
+            // onFilter: (value: Key | boolean, record: IUser) => {
+            //     return (
+            //         record.username
+            //             .toLowerCase()
+            //             .includes((value as string).toLowerCase()) ||
+            //         record.email
+            //             .toLowerCase()
+            //             .includes((value as string).toLowerCase()) ||
+            //         convertToNonAccent(
+            //             record.userFullname.toLowerCase()
+            //         ).includes(
+            //             convertToNonAccent(value as string).toLowerCase()
+            //         )
+            //     );
+            // },
             render: (text: string) => (
                 <span className="text-blue-300 font-semibold">{text}</span>
             ),
@@ -453,10 +474,14 @@ const AdminUserPage = () => {
                 <Select
                     defaultValue={text}
                     style={{ width: 120 }}
-                    onChange={(value) => fetchUpdateRole(
-                        users.find((user) => user.id === record.id) as IUser,
-                        value as string
-                    )}
+                    onChange={(value) =>
+                        fetchUpdateRole(
+                            users.find(
+                                (user) => user.id === record.id
+                            ) as IUser,
+                            value as string
+                        )
+                    }
                     options={[
                         { label: "Giảng viên", value: UserRoles.Lecturer },
                         { label: "Sinh viên", value: UserRoles.User },
@@ -482,13 +507,13 @@ const AdminUserPage = () => {
                                 onConfirm={() => fetchDeleteUser(record)}
                                 okText="Có"
                                 cancelText="Không"
-                            > 
-                                <Trash2 size={16} color={"red"}/>
+                            >
+                                <Trash2 size={16} color={"red"} />
                             </Popconfirm>
                         </div>
                         <div className="cursor-pointer">
-                            <PenLine 
-                                size={16} 
+                            <PenLine
+                                size={16}
                                 onClick={() => {
                                     editForm.setFieldsValue({
                                         username: record.username,
@@ -575,7 +600,6 @@ const AdminUserPage = () => {
                         year: year,
                         user_role: user_role,
                         user_email: email,
-
                     }),
                 }
             );
@@ -734,7 +758,9 @@ const AdminUserPage = () => {
                     <Select.Option value={UserRoles.Lecturer}>
                         Giảng viên
                     </Select.Option>
-                    <Select.Option value={UserRoles.User}>Sinh viên</Select.Option>
+                    <Select.Option value={UserRoles.User}>
+                        Sinh viên
+                    </Select.Option>
                     <Select.Option value={UserRoles.Admin}>Admin</Select.Option>
                 </Select>
             </Form.Item>
@@ -746,10 +772,10 @@ const AdminUserPage = () => {
     }
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             {contextHolder}
-            <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">
+            <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                <span className="text-lg md:text-xl text-red-500 font-bold text-center">
                     Người dùng
                 </span>
                 <AddModal
@@ -776,8 +802,25 @@ const AdminUserPage = () => {
                 formTitle="Thêm người dùng mới"
                 formItems={formEditItems}
                 submitButtonContent="Cập nhật người dùng"
-            />           
-            <Table<IUser> dataSource={users} columns={columns} />
+            />
+            <div className="overflow-x-auto">
+                {/* <div className="flex mb-2 w-full md:max-w-[40%]">
+                    <Input.Search
+                        placeholder="Tìm theo mã môn. Ngăn cách nhau bởi (, ;)"
+                        onSearch={(value) => {
+                            setGlobalSearchText(value);
+                        }}
+                        onChange={(e) => {
+                            setGlobalSearchText(e.target.value);
+                        }}
+                    />
+                </div> */}
+                <Table<IUser>
+                    dataSource={users}
+                    columns={columns}
+                    scroll={{ x: "max-content", y: 55 * 10 }}
+                />
+            </div>
         </div>
     );
 };

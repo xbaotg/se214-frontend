@@ -28,7 +28,13 @@ import Highlighter from "react-highlight-words";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { useAuth } from "@/hooks/auth";
 import Loading from "@/components/Loading";
-import { ArrowDownWideNarrow, NotebookText, PenLine, Trash2 } from "lucide-react";
+import {
+    ArrowDownWideNarrow,
+    NotebookText,
+    PenLine,
+    Plus,
+    Trash2,
+} from "lucide-react";
 import ListPrerequisite from "@/components/admin/PrerequisiteModal";
 
 type DataIndex = keyof ISubject;
@@ -39,10 +45,11 @@ const AdminCoursesPage = () => {
     const [loadingPage, setLoadingPage] = useState(true);
     const [subjects, setSubjects] = useState<ISubject[]>([]);
     const [subjectsOptions, setSubjectsOptions] = useState<
-    {
-        value: string;
-        label: string;
-    }[]>([]);
+        {
+            value: string;
+            label: string;
+        }[]
+    >([]);
     const [searchText, setSearchText] = useState("");
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef<InputRef>(null);
@@ -50,13 +57,13 @@ const AdminCoursesPage = () => {
     const [reFetch, setReFetch] = useState<boolean>(false);
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [isUpdateOpen, setIsUpdateOpen] = useState<boolean>(false);
-    const [isPrequisiteModalOpen, setIsPrequisiteModalOpen] = useState<boolean>(false);
+    const [isPrequisiteModalOpen, setIsPrequisiteModalOpen] =
+        useState<boolean>(false);
     const [subject, setSubject] = useState<ISubject>({
         course_name: "",
         course_fullname: "",
         department_code: "",
     });
- 
 
     const resetCreateCourseForm = () => {
         form.resetFields();
@@ -65,25 +72,22 @@ const AdminCoursesPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [
-                    response_fetch_subjects,
-
-                ] = await Promise.all([
+                const [response_fetch_subjects] = await Promise.all([
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/subject/list`, {
                         method: "GET",
                         headers: {
                             "Content-Type": "application/json",
                             Authorization: `Bearer ${token}`,
                         },
-                    })
-           
+                    }),
                 ]);
                 if (!response_fetch_subjects.ok) {
                     message.error("Failed to fetch courses");
                 }
-    
-   
-                const response_fetch_subjects_data: IApiResponse<ListSubjectResponse[]> = await response_fetch_subjects.json();
+
+                const response_fetch_subjects_data: IApiResponse<
+                    ListSubjectResponse[]
+                > = await response_fetch_subjects.json();
 
                 const fetch_subjects = response_fetch_subjects_data.data.map(
                     (subject) => ({
@@ -93,15 +97,16 @@ const AdminCoursesPage = () => {
                     })
                 );
 
-            
                 messageApi.success({
                     content: "Lấy thông tin thành công.",
                     duration: 1,
                 });
-                setSubjectsOptions(fetch_subjects.map((subject) => ({
-                    value: subject.course_fullname,
-                    label: subject.course_name,
-                })));
+                setSubjectsOptions(
+                    fetch_subjects.map((subject) => ({
+                        value: subject.course_fullname,
+                        label: subject.course_name,
+                    }))
+                );
                 setSubjects(fetch_subjects);
             } catch (error) {
                 console.error("Failed to fetch courses: ", error);
@@ -119,7 +124,7 @@ const AdminCoursesPage = () => {
 
     useEffect(() => {
         form.setFieldsValue({
-        course_id: subject?.course_name || "", 
+            course_id: subject?.course_name || "",
         });
     }, [subject, form]);
 
@@ -151,7 +156,6 @@ const AdminCoursesPage = () => {
             message.error("Failed to delete subject");
         }
     };
-
 
     const handleSearch = (
         selectedKeys: string[],
@@ -299,18 +303,19 @@ const AdminCoursesPage = () => {
             dataIndex: "department_code",
             key: "department_code",
             ...getColumnSearchProps("department_code"),
-            render: (text: string) => (
+            render: (text: string) =>
                 text ? (
                     <span className="text-blue-300 font-semibold">{text}</span>
                 ) : (
-                    <span className="text-red-300 font-semibold">Chưa cập nhật</span>
-                )
-            ),
+                    <span className="text-red-300 font-semibold">
+                        Chưa cập nhật
+                    </span>
+                ),
         },
         {
             title: "Action",
             key: "action",
-            render: (text:string, record: ISubject) => (
+            render: (text: string, record: ISubject) => (
                 <Space size="middle">
                     <div className="flex gap-4">
                         <div className="cursor-pointer">
@@ -326,7 +331,7 @@ const AdminCoursesPage = () => {
                         <div className="cursor-pointer">
                             <ArrowDownWideNarrow
                                 size={16}
-                                 onClick={() => {
+                                onClick={() => {
                                     setSubject(record);
                                     setIsPrequisiteModalOpen(true);
                                 }}
@@ -334,9 +339,9 @@ const AdminCoursesPage = () => {
                         </div>
                         <div className="cursor-pointer">
                             <ListPrerequisite
-                                icon = {<NotebookText size={16}/>}
-                                token = {token}
-                                course = {record}
+                                icon={<NotebookText size={16} />}
+                                token={token}
+                                course={record}
                                 setReFetch={setReFetch}
                             />
                         </div>
@@ -356,7 +361,7 @@ const AdminCoursesPage = () => {
                     </div>
                 </Space>
             ),
-        }
+        },
     ];
 
     if (loadingPage) {
@@ -367,20 +372,21 @@ const AdminCoursesPage = () => {
         values: CreateSubjectFormValues
     ) => {
         try {
-            const { course_fullname	, course_name } = values;
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/subject/create`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(
-                    {
+            const { course_fullname, course_name } = values;
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/subject/create`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
                         course_fullname,
                         course_name,
-                    }
-                ),
-            });
+                    }),
+                }
+            );
 
             if (!response.ok) {
                 message.error("Failed to create subject");
@@ -401,7 +407,7 @@ const AdminCoursesPage = () => {
             console.error("Failed to create subject: ", error);
             message.error("Failed to create subject");
         }
-    }
+    };
 
     const SubjectCreateModal = () => {
         return (
@@ -412,33 +418,31 @@ const AdminCoursesPage = () => {
                     setIsOpen(false);
                     resetCreateCourseForm();
                 }}
-                onOk={
-                   form.submit
-                }
+                onOk={form.submit}
                 okText="Tạo"
                 cancelText="Hủy"
             >
-                    <div className="p-4">
-                        <div className="mb-4">
-                            
-                            <Form
-                                name="basic"
-                                onFinish={handleCreateSubject}
-                                form={form}
-                                autoComplete="off"
-                                >
-                                <>
+                <div className="p-4">
+                    <div className="mb-4">
+                        <Form
+                            name="basic"
+                            onFinish={handleCreateSubject}
+                            form={form}
+                            autoComplete="off"
+                        >
+                            <>
                                 <Form.Item
                                     label="Mã môn"
                                     name="course_name"
                                     rules={[
                                         {
                                             required: true,
-                                            message: "Mã môn không được để trống",
+                                            message:
+                                                "Mã môn không được để trống",
                                         },
                                     ]}
                                 >
-                                    <Input/>
+                                    <Input />
                                 </Form.Item>
 
                                 <Form.Item
@@ -447,18 +451,20 @@ const AdminCoursesPage = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: "Tên môn không được để trống",
+                                            message:
+                                                "Tên môn không được để trống",
                                         },
                                     ]}
                                 >
-                                    <Input/>
+                                    <Input />
                                 </Form.Item>
-                                </>
-                            </Form>
-                        </div>
+                            </>
+                        </Form>
                     </div>
-            </Modal>    
-        )};
+                </div>
+            </Modal>
+        );
+    };
 
     const SubjectUpdateModal = () => {
         return (
@@ -469,33 +475,31 @@ const AdminCoursesPage = () => {
                     setIsUpdateOpen(false);
                     resetCreateCourseForm();
                 }}
-                onOk={
-                   form.submit
-                }
+                onOk={form.submit}
                 okText="Tạo"
                 cancelText="Hủy"
             >
-                    <div className="p-4">
-                        <div className="mb-4">
-                            
-                            <Form
-                                name="basic"
-                                onFinish={handleCreateSubject}
-                                form={form}
-                                autoComplete="off"
-                                >
-                                <>
+                <div className="p-4">
+                    <div className="mb-4">
+                        <Form
+                            name="basic"
+                            onFinish={handleCreateSubject}
+                            form={form}
+                            autoComplete="off"
+                        >
+                            <>
                                 <Form.Item
                                     label="Mã môn"
                                     name="course_name"
                                     rules={[
                                         {
                                             required: true,
-                                            message: "Mã môn không được để trống",
+                                            message:
+                                                "Mã môn không được để trống",
                                         },
                                     ]}
                                 >
-                                    <Input disabled/>
+                                    <Input disabled />
                                 </Form.Item>
 
                                 <Form.Item
@@ -504,18 +508,20 @@ const AdminCoursesPage = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: "Tên môn không được để trống",
+                                            message:
+                                                "Tên môn không được để trống",
                                         },
                                     ]}
                                 >
-                                    <Input/>
+                                    <Input />
                                 </Form.Item>
-                                </>
-                            </Form>
-                        </div>
+                            </>
+                        </Form>
                     </div>
-            </Modal>    
-        )};
+                </div>
+            </Modal>
+        );
+    };
 
     const PrequisiteModal = () => {
         return (
@@ -525,29 +531,27 @@ const AdminCoursesPage = () => {
                 onCancel={() => {
                     setIsPrequisiteModalOpen(false);
                 }}
-                onOk={
-                    form.submit
-                }
+                onOk={form.submit}
                 okText="Tạo"
                 cancelText="Hủy"
             >
-                    <div className="p-4">
-                        <div className="mb-4">
-                            
-                            <Form
-                                name="basic"
-                                onFinish={handleAddPrequisite}
-                                form={form}
-                                autoComplete="off"
-                                >
-                                <>
+                <div className="p-4">
+                    <div className="mb-4">
+                        <Form
+                            name="basic"
+                            onFinish={handleAddPrequisite}
+                            form={form}
+                            autoComplete="off"
+                        >
+                            <>
                                 <Form.Item
                                     label="Mã môn"
                                     name="course_id"
                                     rules={[
                                         {
                                             required: true,
-                                            message: "Mã môn không được để trống",
+                                            message:
+                                                "Mã môn không được để trống",
                                         },
                                     ]}
                                 >
@@ -565,7 +569,8 @@ const AdminCoursesPage = () => {
                                     rules={[
                                         {
                                             required: true,
-                                            message: "Tên môn không được để trống",
+                                            message:
+                                                "Tên môn không được để trống",
                                         },
                                     ]}
                                 >
@@ -576,12 +581,13 @@ const AdminCoursesPage = () => {
                                         options={subjectsOptions}
                                     />
                                 </Form.Item>
-                                </>
-                            </Form>
-                        </div>
+                            </>
+                        </Form>
                     </div>
-            </Modal>    
-        )};
+                </div>
+            </Modal>
+        );
+    };
 
     const handleAddPrequisite = async (
         values: CreatePrerequisiteFormValues
@@ -598,7 +604,7 @@ const AdminCoursesPage = () => {
                     course_id: subject.course_name,
                     prerequisite_id: subjectsOptions.find(
                         (subject) => subject.value === values.prerequisite_id
-                    )?.label
+                    )?.label,
                 }),
             }
         );
@@ -613,16 +619,17 @@ const AdminCoursesPage = () => {
     };
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             {contextHolder}
-            <div className="p-4">
-                <h1 className="text-2xl font-semibold text-center">
+            <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                <span className="text-lg md:text-xl text-red-500 font-bold text-center">
                     Danh sách môn học
-                </h1>
+                </span>
                 <div className="flex justify-end">
                     <Button
                         type="primary"
                         onClick={() => setIsOpen(true)}
+                        icon={<Plus />}
                     >
                         Tạo môn học
                     </Button>
@@ -632,14 +639,16 @@ const AdminCoursesPage = () => {
             <SubjectCreateModal />
             <PrequisiteModal />
             <SubjectUpdateModal />
-     
-            <Table<ISubject>
-                columns={columns}
-                dataSource={subjects}
-                rowKey={(record) => record.course_name}
-                pagination={{ pageSize: 10 }}
-        
-            />
+
+            <div className="overflow-x-auto">
+                <Table<ISubject>
+                    columns={columns}
+                    dataSource={subjects}
+                    rowKey={(record) => record.course_name}
+                    pagination={{ pageSize: 10 }}
+                    scroll={{ x: "max-content", y: 55 * 10 }}
+                />
+            </div>
         </div>
     );
 };

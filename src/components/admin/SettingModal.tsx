@@ -1,7 +1,7 @@
 
 import { IApiResponse, IStateResponse, ITuitionTypeResponse,State, UpdateCalTuitionFormValues } from "@/types";
 import { SettingOutlined } from "@ant-design/icons";
-import { Modal, message, Divider, InputNumber, Select } from "antd";
+import { Modal, message, Divider, InputNumber, Select, Button } from "antd";
 import { useState } from "react";
 
 const SettingModal = ({
@@ -14,6 +14,7 @@ const SettingModal = ({
     const [messageApi, contextHolder] = message.useMessage();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [state, setState] = useState<State>();
+    const [disable, setDisable] = useState(true);
     const [updateTuitionType, setUpdateTuitionType] = useState<UpdateCalTuitionFormValues>({
         cost: 0,
         type: "",
@@ -111,6 +112,33 @@ const SettingModal = ({
         } catch (error) {
             console.error(error);
             messageApi.error("Failed to update state");
+        }
+    }
+
+    const handleUpload = async (formData: FormData) => {
+        try {
+            const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/global/upload_data`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        // Conten: "multipart/form-data",
+                    },
+                    body: formData,
+                }
+            );
+
+            if (!response.ok) {
+                const data : IApiResponse<null> = await response.json();
+                throw new Error(`${data.message}`);
+            }
+
+            messageApi.success("Upload file thành công");
+            window.location.reload();
+        } catch (error) {
+            console.error(error);
+            messageApi.error("Thất bại khi upload file: " + error);
         }
     }
 
@@ -233,6 +261,32 @@ const SettingModal = ({
                             onChange={(value) => setUpdateTuitionType({ ...updateTuitionType, cost: value as number })}
                             addonAfter="₫"
                         />
+                    </div>
+                    
+                    <Divider />
+
+                    <div className="flex justify-center p-4">
+                        <form action={handleUpload}>
+                            <input 
+                            type="file" 
+                            name="file" 
+                            accept=".sql"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    setDisable(false);
+                                } else {
+                                    setDisable(true);
+                                }
+                            }}
+                            />
+                            <Button
+                                className="mt-4"
+                                type="primary"
+                                htmlType="submit"
+                                disabled={disable}
+                            >Upload</Button>
+                        </form>
                     </div>
                 </Modal>
             </div>

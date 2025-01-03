@@ -168,6 +168,7 @@ const EditCourseModal = ({
                             style={{ marginTop: "1rem" }}
                         />
                             <Select
+                                showSearch
                                 size={"middle"}
                                 placeholder="Khoa"
                                 value={courseUpdateForm.course_department}
@@ -206,6 +207,7 @@ const EditCourseModal = ({
                                 Chi Tiết Môn Học
                             </span>
                             <Select
+                                showSearch
                                 size={"middle"}
                                 placeholder="Giảng viên"
                                 value={courseUpdateForm.course_teacher_id}
@@ -234,6 +236,7 @@ const EditCourseModal = ({
                                 style={{ marginTop: "1rem" }}
                             />
                             <Select
+                                showSearch
                                 size={"middle"}
                                 placeholder="Tiết bắt đầu"
                                 value={courseUpdateForm.course_start_shift}
@@ -250,6 +253,7 @@ const EditCourseModal = ({
                                 options={lessionOptions}
                             />
                             <Select
+                                showSearch
                                 size={"middle"}
                                 placeholder="Tiết kết thúc"
                                 value={courseUpdateForm.course_end_shift}
@@ -297,6 +301,7 @@ const EditCourseModal = ({
                     <div className="flex justify-center gap-8 my-4">
                         <div className="w-[40%]">
                             <Select
+                                showSearch
                                 size={"middle"}
                                 placeholder="Học kỳ"
                                 value={courseUpdateForm.course_semester}
@@ -332,6 +337,7 @@ const EditCourseModal = ({
                     </div>
                     <div className="flex justify-center">
                         <Select
+                            showSearch
                             size={"middle"}
                             placeholder="Ngày học"
                             value={courseUpdateForm.course_day}

@@ -44,6 +44,7 @@ const DKHPPage = () => {
     const [loadingPage, setLoadingPage] = useState(true);
     const [loading, setLoading] = useState(false);
     const fetchData = async () => {
+        console.log("fetchData");
         try {
             const [
                 response_fetch_courses,
@@ -57,16 +58,13 @@ const DKHPPage = () => {
                         Authorization: `Bearer ${token}`,
                     },
                 }),
-                fetch(
-                    `${process.env.NEXT_PUBLIC_API_URL}/department/list`,
-                    {
-                        method: "GET",
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    }
-                ),
+                fetch(`${process.env.NEXT_PUBLIC_API_URL}/department/list`, {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }),
                 // BCK code this for registered courses [
                 fetch(
                     `${process.env.NEXT_PUBLIC_API_URL}/user/course/list?course_year=${process.env.NEXT_PUBLIC_CURRENT_YEAR}&course_semester=${process.env.NEXT_PUBLIC_CURRENT_SEMESTER}`,
@@ -92,13 +90,11 @@ const DKHPPage = () => {
             }
             // BCK code this ]
 
-            const response_fetch_courses_data: IApiResponse<
-                ICourseResponse[]
-            > = await response_fetch_courses.json();
+            const response_fetch_courses_data: IApiResponse<ICourseResponse[]> =
+                await response_fetch_courses.json();
 
-            const response_fetch_departments_data: IApiResponse<
-                IDepartment[]
-            > = await response_fetch_departments.json();
+            const response_fetch_departments_data: IApiResponse<IDepartment[]> =
+                await response_fetch_departments.json();
 
             // BCK code this for registered courses [
             const response_fetch_registered_data: IApiResponse<
@@ -106,19 +102,16 @@ const DKHPPage = () => {
             > = await response_fetch_registered.json();
 
             const fetch_registered_courses_id =
-                response_fetch_registered_data.data.map(
-                    (course) => course.id
-                );
+                response_fetch_registered_data.data.map((course) => course.id);
 
-            setSelectedRowKeys(fetch_registered_courses_id);
-            setAlreadyRegisteredCourses(fetch_registered_courses_id);
             // BCK code this ]
 
-            const fetch_departments =
-                response_fetch_departments_data.data.map((department) => ({
+            const fetch_departments = response_fetch_departments_data.data.map(
+                (department) => ({
                     department_id: department.department_id,
                     department_name: department.department_name,
-                }));
+                })
+            );
 
             const fetch_courses = response_fetch_courses_data.data.map(
                 (course) => ({
@@ -146,7 +139,13 @@ const DKHPPage = () => {
                 duration: 1,
             });
             setDepartments(fetch_departments);
-            setCourses(fetch_courses);
+            setSelectedRowKeys(fetch_registered_courses_id);
+            setAlreadyRegisteredCourses(fetch_registered_courses_id);
+            const removeSelectedCourses = fetch_courses.filter(
+                (course) =>
+                    !fetch_registered_courses_id.includes(course.course_id)
+            );
+            setCourses(removeSelectedCourses);
         } catch (error) {
             console.error("Failed to fetch courses: ", error);
             messageApi.error("Lấy thông tin học phần thất bại");
@@ -166,10 +165,10 @@ const DKHPPage = () => {
                 selectedCourses.map((course) => {
                     if (!course) return;
                     if (alreadyRegisteredCourses.includes(course.course_id)) {
-                        messageApi.info(
-                            `Course ${course.course_name} already registered`
-                        );
-                        len+=1;
+                        // messageApi.info(
+                        //     `Course ${course.course_name} already registered`
+                        // );
+                        len += 1;
                         return false;
                     }
                     return fetch(
@@ -191,36 +190,38 @@ const DKHPPage = () => {
             );
 
             const res: IApiResponse<null>[] = await Promise.all(
-                response.map((res) => res ? res.json() : null)
+                response.map((res) => (res ? res.json() : null))
             );
 
-            const successfulRequests = res.filter(
-                (r) => r !== null 
+            const successfulRequests = res.filter((r) => r !== null);
+
+            const successfulIndex = res
+                .map((r, index) => (r !== null ? index : -1))
+                .filter((index) => index !== -1);
+
+            const course = selectedCourses.filter((_, index) =>
+                successfulIndex.includes(index)
             );
 
-            const successfulIndex = res.map(
-                (r, index) => r !== null ? index : -1
-            ).filter((index) => index !== -1);
-
-            const course = selectedCourses.filter(
-                (_, index) => successfulIndex.includes(index)
-            );
-
-            successfulRequests.map((res,i) => {
+            successfulRequests.map((res, i) => {
                 if (res.status) {
                     messageApi.success("Đăng ký thành công");
-                    len+=1;
+                    len += 1;
                 } else {
                     messageApi.error(
-                        `Đăng ký môn ${course[i] ? course[i].course_name : ""} thất bại: ${res.message}`
+                        `Đăng ký môn ${
+                            course[i] ? course[i].course_name : ""
+                        } thất bại: ${res.message}`
                     );
-                    setSelectedRowKeys(selectedRowKeys.filter((_, index) => !successfulIndex.includes(index)));
+                    setSelectedRowKeys(
+                        selectedRowKeys.filter(
+                            (_, index) => !successfulIndex.includes(index)
+                        )
+                    );
                 }
             });
 
-            messageApi.success(
-                `Đăng ký thành công ${len} học phần.`
-            );
+            messageApi.success(`Đăng ký thành công ${len} học phần.`);
 
             // setCourses([...courses]);
             // setReFetch(true);
@@ -235,10 +236,10 @@ const DKHPPage = () => {
 
     const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
         console.log("selectedRowKeys changed: ", newSelectedRowKeys);
-        const unSelectRowKeys = selectedRowKeys.filter(
-            (key) => !newSelectedRowKeys.includes(key)
-        );
-        newSelectedRowKeys = newSelectedRowKeys.concat(unSelectRowKeys);
+        // const unSelectRowKeys = selectedRowKeys.filter(
+        //     (key) => !newSelectedRowKeys.includes(key)
+        // );
+        // newSelectedRowKeys = newSelectedRowKeys.concat(unSelectRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
     };
 
@@ -254,7 +255,7 @@ const DKHPPage = () => {
             return;
         }
     }, [token, router]);
-    
+
     useEffect(() => {
         if (token) {
             fetchData();
@@ -443,11 +444,13 @@ const DKHPPage = () => {
             title: "Thứ",
             dataIndex: "course_day",
             key: "course_day",
+            ...getColumnSearchProps("course_day"),
         },
         {
             title: "Tiết học",
             dataIndex: "course_time",
             key: "course_time",
+            ...getColumnSearchProps("course_time"),
         },
         {
             title: "Sĩ số",
@@ -461,10 +464,10 @@ const DKHPPage = () => {
     }
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto px-4">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             {contextHolder}
-            <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">
+            <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                <span className="text-lg md:text-xl text-red-500 font-bold text-center">
                     Đăng ký học phần
                 </span>
                 <Button
@@ -475,45 +478,48 @@ const DKHPPage = () => {
                     Đăng ký
                 </Button>
             </div>
-            <Table<ICourse>
-                rowSelection={rowSelection}
-                dataSource={courses}
-                columns={columns}
-                onRow={(record) => {
-                    return {
-                        style: rowStyle(record.course_id),
-                    };
-                }}
-                expandable={{
-                    expandRowByClick: true,
-                    expandedRowRender: (record) => {
-                        return (
-                            <div className="ml-10">
-                                <div>
+            <div className="overflow-x-auto">
+                <Table<ICourse>
+                    rowSelection={rowSelection}
+                    dataSource={courses}
+                    columns={columns}
+                    onRow={(record) => {
+                        return {
+                            style: rowStyle(record.course_id),
+                        };
+                    }}
+                    scroll={{ x: "max-content", y: 55 * 8 }}
+                    expandable={{
+                        expandRowByClick: true,
+                        expandedRowRender: (record) => {
+                            return (
+                                <div className="ml-10">
                                     <div>
-                                        <strong>Khoa: &nbsp;</strong>
-                                        {getDepartmentName(
-                                            record.course_department as string
-                                        )}
-                                    </div>
-                                    <div>
-                                        <strong>Năm: &nbsp;</strong>
-                                        {record.course_year}
-                                    </div>
-                                    <div>
-                                        <strong>Tín chỉ: &nbsp;</strong>
-                                        {record.course_credit}
-                                    </div>
-                                    <div>
-                                        <strong>Học kỳ: &nbsp;</strong>
-                                        {record.course_semester}
+                                        <div>
+                                            <strong>Khoa: &nbsp;</strong>
+                                            {getDepartmentName(
+                                                record.course_department as string
+                                            )}
+                                        </div>
+                                        <div>
+                                            <strong>Năm: &nbsp;</strong>
+                                            {record.course_year}
+                                        </div>
+                                        <div>
+                                            <strong>Tín chỉ: &nbsp;</strong>
+                                            {record.course_credit}
+                                        </div>
+                                        <div>
+                                            <strong>Học kỳ: &nbsp;</strong>
+                                            {record.course_semester}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    },
-                }}
-            />
+                            );
+                        },
+                    }}
+                />
+            </div>
         </div>
     );
 };

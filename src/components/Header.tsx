@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { setCookie } from "cookies-next";
@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { INavItem } from "@/types";
 import SettingModal from "./admin/SettingModal";
 import { useAuth } from "@/hooks/auth";
+import { MenuOutlined } from "@ant-design/icons";
 
 const Header = ({
     icon,
@@ -21,6 +22,7 @@ const Header = ({
     navItems: INavItem[];
 }) => {
     const { refreshToken: token } = useAuth();
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [messageApi, contextHolder] = message.useMessage();
     const router = useRouter();
     const pathname = usePathname();
@@ -89,30 +91,61 @@ const Header = ({
     return (
         <>
             {contextHolder}
-            <header className="bg-white shadow-sm h-16">
+            <header className="bg-white shadow-sm h-16 mb-4">
                 <div className="container mx-auto px-4 h-full flex items-center justify-between">
-                    <div className="flex items-center space-x-4 cursor-pointer" onClick={handleHome}>
+                    <div
+                        className="flex items-center space-x-4 cursor-pointer"
+                        onClick={handleHome}
+                    >
                         {icon}
                         <span className="font-bold text-xl">
                             {headerContent}
                         </span>
                     </div>
-                    <nav className="flex space-x-4">
+                    {/* Navigation */}
+                    <nav className="hidden md:flex space-x-4">
                         {navItems.map((item) => (
                             <Link
                                 key={item.path}
                                 href={item.path}
-                                className={`px-3 py-2 relative font-semibold text-sm md:text-lg ${
+                                className={`px-3 py-2 relative font-semibold text-xs lg:text-lg text-center ${
                                     isActive(item.path)
                                         ? "text-blue-500 font-bold after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-[2px] after:bg-blue-500"
-                                        : "text-gray-600 hover:bg-blue-500 hover:text-white hover:after:content-[''] hover:after:absolute hover:after:bottom-0 hover:after:left-0 hover:after:w-full hover:after:h-[2px] hover:after:bg-white hover:rounded-lg transition-all duration-300"
+                                        : "text-gray-600 hover:bg-blue-500 hover:text-white hover:rounded-lg transition-all duration-300"
                                 }`}
                             >
                                 {item.name}
                             </Link>
                         ))}
-                    
                     </nav>
+
+                    {/* Dropdown for small screens */}
+                    <div className="md:hidden relative">
+                        <button
+                            className="flex items-center justify-center text-gray-600 hover:text-blue-500"
+                            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        >
+                            <MenuOutlined className="text-2xl" />
+                        </button>
+                        {isDropdownOpen && (
+                            <div className="absolute left-1/2 transform -translate-x-1/2 mt-2 w-48 bg-white shadow-lg rounded-lg overflow-hidden z-10">
+                                {navItems.map((item) => (
+                                    <Link
+                                        key={item.path}
+                                        href={item.path}
+                                        className={`block px-4 py-2 text-gray-600 hover:bg-blue-500 hover:text-white ${
+                                            isActive(item.path)
+                                                ? "font-bold text-blue-500"
+                                                : ""
+                                        }`}
+                                        onClick={() => setIsDropdownOpen(false)}
+                                    >
+                                        {item.name}
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <div className="flex items-center space-x-10">
                         <SettingModal
                             headerContent={headerContent}

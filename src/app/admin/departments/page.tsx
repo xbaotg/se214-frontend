@@ -110,7 +110,7 @@ const AdminDepartmentPage = () => {
                 content: `Xóa khoa ${department.department_name} thất bại.`,
             });
         }
-    }
+    };
 
     const updatedDepartments = (new_departments: IDepartment[]) => {
         setDepartments(new_departments);
@@ -288,11 +288,10 @@ const AdminDepartmentPage = () => {
                                 onConfirm={() => fetchDelteDepartment(record)}
                                 okText="Có"
                                 cancelText="Không"
-                            > 
-                                <Trash2 size={16} color={"red"}/>
+                            >
+                                <Trash2 size={16} color={"red"} />
                             </Popconfirm>
                         </div>
-
                     </div>
                 </Space>
             ),
@@ -419,10 +418,12 @@ const AdminDepartmentPage = () => {
     }
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             {contextHolder}
-            <div className="flex justify-around my-5">
-                <span className="text-xl text-red-500 font-bold">Khoa</span>
+            <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                <span className="text-lg md:text-xl text-red-500 font-bold text-center">
+                    Khoa
+                </span>
                 <AddModal
                     open={open}
                     form={form}
@@ -436,7 +437,13 @@ const AdminDepartmentPage = () => {
                     formItems={formItems}
                 />
             </div>
-            <Table<IDepartment> dataSource={departments} columns={columns} />
+            <div className="overflow-x-auto">
+                <Table<IDepartment>
+                    dataSource={departments}
+                    columns={columns}
+                    scroll={{ x: "max-content", y: 55 * 10 }}
+                />
+            </div>
         </div>
     );
 };

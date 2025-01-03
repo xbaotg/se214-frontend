@@ -4,8 +4,13 @@ import "@/styles/globals.css";
 import { Settings } from "lucide-react";
 import { lecturerNavItems } from "@/constants";
 import { AuthProvider } from "@/hooks/auth";
+import { Metadata } from "next";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+    title: "Lecturer - DKHP",
+};
 
 export default function UserLayout({
     children,

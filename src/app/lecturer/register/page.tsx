@@ -666,6 +666,7 @@ const LecturerCoursesPage = () => {
                             style={{ marginTop: "1rem" }}
                         />
                         <Select
+                            showSearch
                             size={"middle"}
                             placeholder="Khoa"
                             value={courseCreateForm.course_department}
@@ -704,6 +705,7 @@ const LecturerCoursesPage = () => {
                             Chi Tiết Môn Học
                         </span>
                         <Select
+                            showSearch
                             size={"middle"}
                             placeholder="Giảng viên"
                             value={courseCreateForm.course_teacher_id}
@@ -732,6 +734,7 @@ const LecturerCoursesPage = () => {
                             style={{ marginTop: "1rem" }}
                         />
                         <Select
+                            showSearch
                             size={"middle"}
                             placeholder="Tiết bắt đầu"
                             value={courseCreateForm.course_start_shift}
@@ -748,6 +751,7 @@ const LecturerCoursesPage = () => {
                             options={lessionOptions}
                         />
                         <Select
+                            showSearch
                             size={"middle"}
                             placeholder="Tiết kết thúc"
                             value={courseCreateForm.course_end_shift}
@@ -795,6 +799,7 @@ const LecturerCoursesPage = () => {
                 <div className="flex justify-center gap-8 my-4">
                     <div className="w-[40%]">
                         <Select
+                            showSearch
                             size={"middle"}
                             placeholder="Học kỳ"
                             value={courseCreateForm.course_semester}
@@ -830,6 +835,7 @@ const LecturerCoursesPage = () => {
                 </div>
                 <div className="flex justify-center">
                     <Select
+                        showSearch
                         size={"middle"}
                         placeholder="Ngày học"
                         value={courseCreateForm.course_day}

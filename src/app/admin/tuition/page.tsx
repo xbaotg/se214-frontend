@@ -1,10 +1,27 @@
 "use client";
 
-import { DollarCircleOutlined, MoneyCollectTwoTone, SearchOutlined } from "@ant-design/icons";
+import {
+    DollarCircleOutlined,
+    MoneyCollectTwoTone,
+    SearchOutlined,
+} from "@ant-design/icons";
 import React, { useEffect, useRef, useState } from "react";
 import type { FilterDropdownProps } from "antd/es/table/interface";
-import { message, Table, Button, Input, Space, Modal, DatePicker, Popconfirm, Form, InputNumber, Select, FormProps } from "antd";
-import { InputRef, TableColumnType,  Divider } from "antd";
+import {
+    message,
+    Table,
+    Button,
+    Input,
+    Space,
+    Modal,
+    DatePicker,
+    Popconfirm,
+    Form,
+    InputNumber,
+    Select,
+    FormProps,
+} from "antd";
+import { InputRef, TableColumnType, Divider } from "antd";
 
 import {
     CalTuitionResponse,
@@ -36,11 +53,12 @@ const TuitionPage = () => {
     const [searchedColumn, setSearchedColumn] = useState("");
     const searchInput = useRef<InputRef>(null);
     const [messageApi, contextHolder] = message.useMessage();
-    const [createTuitionForm, setCreateTuitionForm] = useState<CreateTuitionFormValues>({
-        year: new Date().getFullYear(),
-        semester: 1,
-        deadline: "",
-    });
+    const [createTuitionForm, setCreateTuitionForm] =
+        useState<CreateTuitionFormValues>({
+            year: new Date().getFullYear(),
+            semester: 1,
+            deadline: "",
+        });
     const tuitionOptions = [
         {
             label: "Chưa đóng",
@@ -124,18 +142,17 @@ const TuitionPage = () => {
                     }),
                 }
             );
-            const data: IApiResponse<CalTuitionResponse> = await response.json();
+            const data: IApiResponse<CalTuitionResponse> =
+                await response.json();
+            setTuition(data.data.tuition);
             if (response.ok) {
                 messageApi.success({
                     content: "Lấy thông tin học phí thành công",
                     duration: 1,
                 });
-            } else {
-                message.error("Lấy thông tin học phí thành công");
-            }
-            // setIsModalOpen(false);
-            setCourses(data.data.courses.map((course) => ({
-                       key: course.id,
+                setCourses(
+                    data.data.courses.map((course) => ({
+                        key: course.id,
                         course_id: course.id,
                         course_name: course.course_name,
                         course_teacher_id: course.course_teacher_id,
@@ -148,20 +165,27 @@ const TuitionPage = () => {
                         course_year: course.course_year,
                         course_semester: course.course_semester,
                         course_credit: course.course_credit,
-                    })));
-            setTuition(data.data.tuition);
+                    }))
+                );
+            } else {
+                message.error(
+                    "Lấy thông tin học phí không thành công: " + data.message
+                );
+                setCourses([]);
+            }
+            // setIsModalOpen(false);
             setIsTuitionModalOpen(true);
         } catch (error) {
             console.error("Failed to create tuition", error);
             message.error("Lấy thông tin học phí không thành công");
         }
-    }
+    };
 
-//     {
-//   "deadline": "string",
-//   "semester": 0,
-//   "year": 0
-// }
+    //     {
+    //   "deadline": "string",
+    //   "semester": 0,
+    //   "year": 0
+    // }
     const fetchCreateTuition = async () => {
         try {
             const response = await fetch(
@@ -210,7 +234,9 @@ const TuitionPage = () => {
                     content: "Xóa học phí thành công",
                     duration: 1,
                 });
-                setTuitions(tuitions.filter((tuition) => tuition.id !== tuitionID));
+                setTuitions(
+                    tuitions.filter((tuition) => tuition.id !== tuitionID)
+                );
             } else {
                 message.error("Xóa học phí không thành công: " + data.message);
             }
@@ -218,14 +244,14 @@ const TuitionPage = () => {
             console.error("Failed to delete tuition", error);
             message.error("Xóa học phí không thành công");
         }
-    }
+    };
 
     const handleUpdateTuition: FormProps["onFinish"] = async (
         values: UpdateTuitionFormValues
     ) => {
         try {
             console.log(values);
-            const {deadline, tuition, paid, tuition_status, id} = values;
+            const { deadline, tuition, paid, tuition_status, id } = values;
             console.log(deadline, tuition, paid, tuition_status, id);
             const response = await fetch(
                 `${process.env.NEXT_PUBLIC_API_URL}/tuition/update_tuition`,
@@ -235,15 +261,13 @@ const TuitionPage = () => {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`,
                     },
-                    body: JSON.stringify(
-                        {
-                            deadline: deadline,
-                            tuition: tuition,
-                            paid: paid,
-                            tuition_status: tuition_status,
-                            id: id,
-                        }
-                    ),
+                    body: JSON.stringify({
+                        deadline: deadline,
+                        tuition: tuition,
+                        paid: paid,
+                        tuition_status: tuition_status,
+                        id: id,
+                    }),
                 }
             );
             const data: IApiResponse<ITuitionResponse> = await response.json();
@@ -255,14 +279,15 @@ const TuitionPage = () => {
                 setIsUpdateModalOpen(false);
                 fetchTuitions();
             } else {
-                message.error("Cập nhật học phí không thành công: " + data.message);
+                message.error(
+                    "Cập nhật học phí không thành công: " + data.message
+                );
             }
         } catch (error) {
             console.error("Failed to update tuition", error);
             message.error("Cập nhật học phí không thành công");
         }
-    }
-
+    };
 
     const handleSearch = (
         selectedKeys: string[],
@@ -392,13 +417,10 @@ const TuitionPage = () => {
         style: "currency",
         currency: "VND",
         minimumFractionDigits: 0,
-    })
-    const modify = (value: string) => (
+    });
+    const modify = (value: string) =>
         // return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-    );    
-    
-
+        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
     const columns = [
         {
@@ -413,9 +435,7 @@ const TuitionPage = () => {
             key: "tuition",
             ...getColumnSearchProps("tuition"),
             render: (text: number) => (
-                <div>
-                    {modify(formattedAmount.format(text))}
-                </div>
+                <div>{modify(formattedAmount.format(text))}</div>
             ),
         },
         {
@@ -424,9 +444,7 @@ const TuitionPage = () => {
             key: "paid",
             ...getColumnSearchProps("paid"),
             render: (text: number) => (
-                <div>
-                    {modify(formattedAmount.format(text))}
-                </div>
+                <div>{modify(formattedAmount.format(text))}</div>
             ),
         },
         {
@@ -446,14 +464,16 @@ const TuitionPage = () => {
             dataIndex: "tuitionStatus",
             key: "tuitionStatus",
             ...getColumnSearchProps("tuitionStatus"),
-
         },
         {
             title: "Thao tác",
             key: "action",
             render: (text: string, record: ITuition) => (
                 <Space size="large">
-                    <div className="flex gap-4">
+                    <div
+                        className="flex gap-4 items-center"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="cursor-pointer">
                             <PayTuitionModal
                                 icon={<DollarCircleOutlined size={16} />}
@@ -469,8 +489,8 @@ const TuitionPage = () => {
                                 onConfirm={() => fetchDeleteTuition(record.id)}
                                 okText="Có"
                                 cancelText="Không"
-                            > 
-                                <Trash2 size={16} color={"red"}/>
+                            >
+                                <Trash2 size={16} color={"red"} />
                             </Popconfirm>
                         </div>
                         <div className="cursor-pointer">
@@ -479,13 +499,16 @@ const TuitionPage = () => {
                                 onClick={() => {
                                     setIsUpdateModalOpen(true);
                                     form.setFieldsValue({
-                                        deadline: dayjs(record.tuitionDeadline, "YYYY-MM-DD"),
+                                        deadline: dayjs(
+                                            record.tuitionDeadline,
+                                            "YYYY-MM-DD"
+                                        ),
                                         tuition: record.tuition,
                                         tuition_status: record.tuitionStatus,
                                         paid: record.paid,
                                         id: record.id,
                                     });
-                                }} 
+                                }}
                             />
                         </div>
                         <div className="cursor-pointer">
@@ -494,7 +517,7 @@ const TuitionPage = () => {
                                 onClick={() => {
                                     fetchGetTuition(record);
                                     setIsTuitionModalOpen(true);
-                                }} 
+                                }}
                             />
                         </div>
                     </div>
@@ -505,11 +528,7 @@ const TuitionPage = () => {
 
     const formItems = (
         <>
-            <Form.Item
-                label="ID"
-                name="id"
-                hidden
-            >
+            <Form.Item label="ID" name="id" hidden>
                 <Input />
             </Form.Item>
 
@@ -525,10 +544,14 @@ const TuitionPage = () => {
                 name="tuition"
                 rules={[{ required: true, message: "Nhập học phí" }]}
             >
-                <InputNumber 
+                <InputNumber
                     style={{ width: "100%" }}
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                    formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) =>
+                        value?.replace(/\$\s?|(,*)/g, "") as unknown as number
+                    }
                     addonAfter="₫"
                 />
             </Form.Item>
@@ -538,6 +561,7 @@ const TuitionPage = () => {
                 rules={[{ required: true, message: "Nhập trạng thái" }]}
             >
                 <Select
+                    showSearch
                     placeholder="Chọn trạng thái"
                     options={tuitionOptions}
                     onChange={(value) => {
@@ -558,26 +582,32 @@ const TuitionPage = () => {
                 name="paid"
                 rules={[{ required: true, message: "Nhập số tiền đã đóng" }]}
             >
-                <InputNumber 
+                <InputNumber
                     style={{ width: "100%" }}
-                    formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                    parser={(value) => value?.replace(/\$\s?|(,*)/g, '') as unknown as number}
+                    formatter={(value) =>
+                        `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) =>
+                        value?.replace(/\$\s?|(,*)/g, "") as unknown as number
+                    }
                     addonAfter="₫"
                 />
             </Form.Item>
         </>
-    )
+    );
 
     if (loadingPage) {
         return <Loading />;
     }
 
     return (
-        <div className="w-[90%] border shadow-sm rounded-lg mx-auto">
+        <div className="w-[90%] max-w-7xl border shadow-sm rounded-lg mx-auto px-4 md:px-6">
             <div>
                 {contextHolder}
-                <div className="flex justify-between items-center p-4">
-                    <h1 className="text-2xl font-semibold">Quản lý học phí</h1>
+                <div className="flex flex-col md:flex-row flex-wrap justify-between md:justify-around items-center my-5 gap-4">
+                    <span className="text-lg md:text-xl text-red-500 font-bold text-center">
+                        Quản lý học phí
+                    </span>
                     <Button
                         type="primary"
                         icon={<MoneyCollectTwoTone />}
@@ -597,8 +627,8 @@ const TuitionPage = () => {
                     <div className="p-4 grid grid-cols-1">
                         <span className="flex text-blue-400 font-semibold text-lg justify-center">
                             Tạo học phí
-                        </span>                
-                        <Divider />    
+                        </span>
+                        <Divider />
                         <label className="text-red-500 font-semibold">
                             Năm học:
                         </label>
@@ -614,7 +644,10 @@ const TuitionPage = () => {
                                     year: e as number,
                                 })
                             }
-                            style={{ marginBottom: "1rem", marginTop: "0.5rem" }}
+                            style={{
+                                marginBottom: "1rem",
+                                marginTop: "0.5rem",
+                            }}
                         />
                         <label className="text-red-500 font-semibold">
                             Học kỳ:
@@ -632,7 +665,10 @@ const TuitionPage = () => {
                                     semester: e as number,
                                 })
                             }
-                            style={{ marginBottom: "1rem", marginTop: "0.5rem" }}
+                            style={{
+                                marginBottom: "1rem",
+                                marginTop: "0.5rem",
+                            }}
                         />
                         <label className="text-red-500 font-semibold">
                             Deadline:
@@ -647,16 +683,19 @@ const TuitionPage = () => {
                                     deadline: date as string,
                                 })
                             }
-                            style={{ marginBottom: "1rem", marginTop: "0.5rem" }}
+                            style={{
+                                marginBottom: "1rem",
+                                marginTop: "0.5rem",
+                            }}
                         />
                     </div>
                 </Modal>
             </div>
 
-            <Modal 
+            <Modal
                 title="Chỉnh sửa học phí"
                 open={isUpdateModalOpen}
-                onOk={form.submit} 
+                onOk={form.submit}
                 onCancel={() => setIsUpdateModalOpen(false)}
             >
                 <Form
@@ -676,30 +715,32 @@ const TuitionPage = () => {
                 tuition={tuition}
             />
 
-            <Table<ITuition> 
-            columns={columns} 
-            dataSource={tuitions} 
-            expandable={{
-                    expandRowByClick: true,
-                    expandedRowRender: (record) => {
-                        return (
-                            <div className="ml-10">
-                                <div>
+            <div className="overflow-x-auto">
+                <Table<ITuition>
+                    columns={columns}
+                    dataSource={tuitions}
+                    scroll={{ x: "max-content", y: 55 * 10 }}
+                    expandable={{
+                        expandRowByClick: true,
+                        expandedRowRender: (record) => {
+                            return (
+                                <div className="ml-10">
                                     <div>
-                                        <strong>Tín chỉ: &nbsp;</strong>
-                                        {record.totalCredit}
+                                        <div>
+                                            <strong>Tín chỉ: &nbsp;</strong>
+                                            {record.totalCredit}
+                                        </div>
+                                        <div>
+                                            <strong>Deadline: &nbsp;</strong>
+                                            {record.tuitionDeadline}
+                                        </div>
                                     </div>
-                                    <div>
-                                        <strong>Deadline: &nbsp;</strong>
-                                        {record.tuitionDeadline}
-                                    </div>
-
                                 </div>
-                            </div>
-                        );
-                    },
-                }}
-            />
+                            );
+                        },
+                    }}
+                />
+            </div>
         </div>
     );
 };

@@ -4,8 +4,13 @@ import "@/styles/globals.css";
 import { UserRound } from "lucide-react";
 import { userNavItems } from "@/constants";
 import { AuthProvider } from "@/hooks/auth";
+import { Metadata } from "next";
 
 const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+    title: "User - DKHP",
+};
 
 export default function UserLayout({
     children,
